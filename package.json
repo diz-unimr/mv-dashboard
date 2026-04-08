@@ -1,0 +1,22 @@
+{
+  "name": "mv-dashboard",
+  "version": "0.1.0",
+  "description": "",
+  "dependencies": {
+    "tailwindcss": "~4.2.2"
+  },
+  "devDependencies": {
+    "@rspack/core": "~1.7.11",
+    "@rspack/cli": "~1.7.11",
+    "@tailwindcss/postcss": "~4.2.2",
+    "@tailwindcss/cli": "~4.2.2",
+    "autoprefixer": "~10.4.27",
+    "postcss": "~8.5.9",
+    "postcss-loader": "~8.2.1"
+  },
+  "scripts": {
+    "dev": "rspack build --watch --config ./web/rspack.config.js",
+    "build": "rspack build --config ./web/rspack.config.js"
+  },
+  "private": true
+}

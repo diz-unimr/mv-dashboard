@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+body {
+
+}
+
+nav {
+    @apply bg-gray-600 text-white p-4 mb-4 flex flex-row justify-between;
+}
+
+nav .nav-name {
+    @apply text-3xl font-bold;
+}
+
+nav .login {
+    @apply flex flex-row gap-4;
+    align-items: center;
+}
+
+nav .login .button {
+    @apply bg-red-900 text-white px-4 py-2 rounded-md;
+}
+
+nav .login .button:hover {
+    @apply bg-red-950;
+}
+
+main {
+    @apply container mx-auto grow;
+}
+
+h1 {
+    @apply text-3xl font-bold;
+}
+
+ul > li {
+    @apply list-disc list-inside;
+}
+
+time {
+    @apply font-mono font-bold underline;
+}
+
+button,
+input[type=radio] {
+    @apply cursor-pointer
+}
+
+button {
+    @apply bg-sky-900 text-white px-4 py-2 rounded-md;
+}
+
+input[type=text], input[type=password] {
+    @apply border-b-2 border-b-sky-900 outline-none font-mono transition-colors duration-100
+}
+input[type=text]:focus-visible,
+input[type=password]:focus-visible {
+    @apply border-b-green-900
+}
+
+.login-form {
+    @apply shadow-md border-gray-500 border-2;
+
+    width: fit-content;
+    margin: 3rem auto;
+    padding: 2em 5rem;
+
+    border-radius: .5rem;
+    background: white;
+}
+
+.login-form form {
+    width: 20rem;
+    margin: 0 auto;
+    display: grid;
+    grid-gap: .5rem;
+
+    border: none;
+    background: none;
+}
+
+.login-form form div {
+    @apply flex flex-col my-4;
+}
+
+.login-form form label {
+    font-size: .8rem;
+    display: block;
+}
+
+.login-form img {
+    margin: 0 auto;
+    width: 4rem;
+    display: block;
+}
+
+section.case {
+    @apply shadow-md border-gray-300 my-6 overflow-hidden;
+    border-width: 1px;
+    border-radius: .3rem;
+}
+
+section.case h3 {
+    @apply text-lg bg-green-800 px-2 font-bold;
+    color: white;
+}
+
+section.case.invalid h3 {
+    @apply bg-red-800
+}
+section.case > div.case-details {
+    @apply flex flex-row
+}
+
+section.case > div.case-details > div {
+    @apply py-2 px-6 w-1/4 min-h-40 bg-green-100;
+    clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%, 5% 50%);
+}
+
+section.case > div.case-details > div:first-child {
+    clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%, 0 50%);
+}
+
+section.case > div.case-details > div.stacked {
+    @apply pl-2 p-0 grid grid-rows-2 gap-2 bg-transparent;
+    clip-path: none;
+}
+
+section.case > div.case-details > div.stacked > div {
+    @apply py-2 px-6 bg-green-100;
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 2.5% 50%);
+}
+
+section.case div.case-detail:has(.invalid-part),
+section.case div.stacked > div.case-detail:has(.invalid-part) {
+    @apply bg-red-200;
+}
+
+section.case div.case-detail:has(.warning-part),
+section.case div.stacked > div.case-detail:has(.warning-part) {
+    @apply bg-yellow-200;
+}
+
+section.case div.case-detail:has(.missing-part),
+section.case div.stacked > div.case-detail:has(.missing-part) {
+    @apply bg-gray-200;
+}
+
+section.case > div.case-details h4 {
+    @apply font-bold;
+}
+
+section.case > div.case-details code {
+    @apply bg-gray-200 font-mono p-1;
+}
