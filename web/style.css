@@ -6,10 +6,12 @@ body {
 
 nav {
     @apply bg-gray-600 text-white p-4 mb-4 flex flex-row justify-between;
+    min-height: 5rem;
 }
 
 nav .nav-name {
     @apply text-3xl font-bold;
+    align-self: center;
 }
 
 nav .login {
