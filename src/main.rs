@@ -8,7 +8,7 @@ use axum::http::header::CONTENT_TYPE;
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_login::tower_sessions::SessionManagerLayer;
-use axum_login::{AuthManagerLayerBuilder, AuthSession};
+use axum_login::{AuthManagerLayerBuilder, AuthSession, login_required};
 use clap::Parser;
 use include_dir::{Dir, include_dir};
 use std::path;
@@ -35,7 +35,7 @@ fn routes() -> axum::Router {
 
     axum::Router::new()
         .route("/", get(handle_request))
-        //.layer(login_required!(Backend, login_url = "/login"))
+        .layer(login_required!(Backend, login_url = "/login"))
         .route("/login", get(show_login).post(handle_login))
         .route("/logout", get(handle_logout))
         .route(
