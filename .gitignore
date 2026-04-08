@@ -1,3 +1,4 @@
 /target
 /resources/assets/*
 /node_modules
+.idea
