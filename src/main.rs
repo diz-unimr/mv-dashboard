@@ -33,15 +33,18 @@ fn routes() -> axum::Router {
 
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
-    axum::Router::new()
+    let protected_routes = axum::Router::new()
         .route("/mv-dashboard", get(handle_request))
-        .layer(login_required!(Backend, login_url = "/mv-dashboard/login"))
+        .layer(login_required!(Backend, login_url = "/mv-dashboard/login"));
+
+    axum::Router::new()
         .route("/mv-dashboard/login", get(show_login).post(handle_login))
         .route("/mv-dashboard/logout", get(handle_logout))
         .route(
             "/mv-dashboard/assets/{*path}",
             get(|path| async { serve_asset(path).await }),
         )
+        .merge(protected_routes)
         .layer(auth_layer)
 }
 

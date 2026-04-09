@@ -63,7 +63,10 @@ pub(crate) struct Backend {
 
 impl Default for Backend {
     fn default() -> Self {
-        let http_client = reqwest::Client::new();
+        let http_client = reqwest::ClientBuilder::new()
+            .user_agent("mv-dashboard/0.1.0")
+            .build()
+            .unwrap_or_default();
 
         Self {
             users: Arc::new(RwLock::new(HashMap::new())),
@@ -140,7 +143,7 @@ pub(crate) async fn handle_login(
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     }
 
-    Redirect::to("/").into_response()
+    Redirect::to("/mv-dashboard").into_response()
 }
 
 pub(crate) async fn handle_logout(mut auth_session: AuthSession<Backend>) -> impl IntoResponse {
