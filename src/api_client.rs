@@ -12,6 +12,7 @@ impl ApiClient {
             base_url: Self::clean_base_url(base_url),
             http_client: reqwest::ClientBuilder::new()
                 .user_agent("mv-dashboard/0.1.0")
+                .timeout(std::time::Duration::from_secs(15))
                 .build()
                 .unwrap_or_default(),
         }
@@ -33,9 +34,10 @@ impl ApiClient {
             .http_client
             .get(self.full_url("/x-api/mv-dashboard"))
             .basic_auth(user.username(), Some(&user.password()))
+            .header("Accept", "application/json")
             .send()
             .await
-            .map_err(|_| "Cannot connect to X-API".to_string())?;
+            .map_err(|e| format!("Cannot connect to X-API: {e}"))?;
 
         let mut cases = response
             .json::<Vec<Case>>()
