@@ -67,6 +67,20 @@ struct IndexTemplate {
     cases: Vec<Case>,
 }
 
+impl IndexTemplate {
+    fn case_count(&self) -> usize {
+        self.cases.len()
+    }
+
+    fn valid_case_count(&self) -> usize {
+        self.cases.iter().filter(|case| case.is_valid()).count()
+    }
+
+    fn invalid_case_count(&self) -> usize {
+        self.cases.iter().filter(|case| !case.is_valid()).count()
+    }
+}
+
 #[derive(Template)]
 #[template(path = "login.html")]
 struct LoginTemplate {}

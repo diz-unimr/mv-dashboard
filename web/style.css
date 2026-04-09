@@ -96,7 +96,8 @@ input[type=password]:focus-visible {
     display: block;
 }
 
-section.case {
+section.case,
+.case-count {
     @apply shadow-md border-gray-300 my-6 overflow-hidden;
     border-width: 1px;
     border-radius: .3rem;
@@ -154,4 +155,20 @@ section.case > div.case-details h4 {
 
 section.case > div.case-details code {
     @apply bg-gray-200 font-mono p-1;
+}
+
+.case-count {
+    @apply p-4 font-bold bg-gray-100;
+}
+
+.case-count b {
+    @apply font-bold text-white bg-gray-800 px-2 py-1 rounded-lg;
+}
+
+.case-count b.valid-case-count {
+    @apply bg-green-800;
+}
+
+.case-count b.invalid-case-count {
+    @apply bg-red-800;
 }

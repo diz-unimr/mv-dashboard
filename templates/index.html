@@ -31,6 +31,12 @@
 
     {% if cases.len() > 0 %}
 
+    <p class="case-count">
+        Es gibt <b>{{ case_count() }}</b> Fälle in Onkostar.
+        Davon abgeschlossen: <b class="valid-case-count">{{ valid_case_count() }}</b>,
+        noch offen: <b class="invalid-case-count">{{ invalid_case_count() }}</b>.
+    </p>
+
     {% for case in cases %}
     {% if case.is_valid() %}<section class="case">{% else %}<section class="case invalid">{% endif %}
         <h3>{{ case.formatted_case_id() }}</h3>
@@ -150,6 +156,8 @@
     </section>
     {% endfor %}
 
+    {% else %}
+    <b>Keine Fälle gefunden</b>
     {% endif %}
 </main>
 <script src="/mv-dashboard/assets/main.js"></script>
