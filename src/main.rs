@@ -11,6 +11,7 @@ use axum_login::tower_sessions::SessionManagerLayer;
 use axum_login::{AuthManagerLayerBuilder, AuthSession, login_required};
 use clap::Parser;
 use include_dir::{Dir, include_dir};
+use log::error;
 use std::path;
 use std::sync::LazyLock;
 use tower_sessions::MemoryStore;
@@ -28,7 +29,18 @@ static API_CLIENT: LazyLock<api_client::ApiClient> =
 
 fn routes() -> axum::Router {
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store);
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_name("mv-dashboard-session")
+        .with_path("/mv-dashboard")
+        .with_secure(false);
+
+    let session_layer = if let Some(cookie_domain) = &CONFIG.cookie_domain {
+        log::info!("Using cookie domain: {}", cookie_domain);
+        session_layer.with_domain(cookie_domain.clone())
+    } else {
+        session_layer
+    };
+
     let backend = Backend::default();
 
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
@@ -69,7 +81,10 @@ async fn handle_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse,
 
     let response = match API_CLIENT.dashboard(user.clone()).await {
         Ok(data) => data,
-        Err(_) => return Ok(Html("Cannot connect to X-API".to_string())),
+        Err(e) => {
+            error!("{e}");
+            return Ok(Html("Cannot connect to X-API".to_string()));
+        }
     };
 
     let template = IndexTemplate {

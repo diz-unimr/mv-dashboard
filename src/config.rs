@@ -18,4 +18,11 @@ pub struct Config {
         help = "The X-API URL"
     )]
     pub onkostar_url: String,
+
+    #[clap(
+        long,
+        env = "COOKIE_DOMAIN",
+        help = "The cookie domain to be used (optional)"
+    )]
+    pub cookie_domain: Option<String>,
 }

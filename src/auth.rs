@@ -84,7 +84,7 @@ impl AuthnBackend for Backend {
         &self,
         credentials: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
-        let username = match self
+        match self
             .http_client
             .get(format!("{}/x-api/me", CONFIG.onkostar_url))
             .basic_auth(&credentials.username, Some(&credentials.password))
@@ -92,7 +92,7 @@ impl AuthnBackend for Backend {
             .await
         {
             Ok(response) => {
-                if response.status() != StatusCode::OK {
+                if !response.status().is_success() {
                     return Ok(None);
                 }
                 response.text().await.unwrap_or_default()
@@ -106,7 +106,7 @@ impl AuthnBackend for Backend {
         };
 
         let user = User {
-            username,
+            username: credentials.username,
             password: credentials.password,
             hash,
         };
