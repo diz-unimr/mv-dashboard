@@ -134,7 +134,11 @@
                     <p>
                         <time datetime="{{ genomic_submission.date }}">{{ genomic_submission.date }}</time>
                     </p>
+                    {% if genomic_submission.id.is_empty() %}
+                    <p class="warning-part">ohne Kennung</p>
+                    {% else %}
                     <p>mit Kennung <code>{{ genomic_submission.id }}</code></p>
+                    {% endif %}
                     {% endwhen %}
                     {% when None %}
                     <p class="missing-part">Keine Meldebestätigung GRZ</p>
