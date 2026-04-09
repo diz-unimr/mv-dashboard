@@ -143,6 +143,7 @@ impl Consent for BroadConsent {
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Submission {
+    #[serde(default = "String::new")]
     pub(crate) id: String,
     pub(crate) date: String,
 }
