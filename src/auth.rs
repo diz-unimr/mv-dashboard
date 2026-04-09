@@ -83,7 +83,7 @@ impl AuthnBackend for Backend {
     ) -> Result<Option<Self::User>, Self::Error> {
         let username = match self
             .http_client
-            .get(format!("{}/me", CONFIG.api_url))
+            .get(format!("{}/x-api/me", CONFIG.onkostar_url))
             .basic_auth(&credentials.username, Some(&credentials.password))
             .send()
             .await
@@ -131,7 +131,7 @@ pub(crate) async fn handle_login(
     let user = match auth_session.authenticate(credentials).await {
         Ok(Some(user)) => user,
         Ok(None) => {
-            return Redirect::to("/login").into_response();
+            return Redirect::to("/mv-dashboard/login").into_response();
         }
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
@@ -145,7 +145,7 @@ pub(crate) async fn handle_login(
 
 pub(crate) async fn handle_logout(mut auth_session: AuthSession<Backend>) -> impl IntoResponse {
     match auth_session.logout().await {
-        Ok(_) => Redirect::to("/login").into_response(),
+        Ok(_) => Redirect::to("/mv-dashboard/login").into_response(),
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }

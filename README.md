@@ -10,10 +10,10 @@ Beim Start der Anwendung können Parameter angegeben werden.
 Usage: mv-dashboard [OPTIONS]
 
 Options:
-      --listen <LISTEN>    The address to listen on [env: LISTEN=] [default: 0.0.0.0:3000]
-      --api-url <API_URL>  The X-API URL [env: API_URL=] [default: http://localhost:8080/onkostar/x-api]
-  -h, --help               Print help
-  -V, --version            Print version
+      --listen <LISTEN>              The address to listen on [env: LISTEN=] [default: 0.0.0.0:3000]
+      --onkostar-url <ONKOSTAR_URL>  The X-API URL [env: ONKOSTAR_URL=] [default: http://localhost:8080/onkostar]
+  -h, --help                         Print help
+  -V, --version                      Print version
 ```
 
 Die Anwendung lässt sich auch mit Umgebungsvariablen konfigurieren.

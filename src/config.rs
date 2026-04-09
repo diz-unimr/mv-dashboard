@@ -13,9 +13,9 @@ pub struct Config {
 
     #[clap(
         long,
-        env = "API_URL",
-        default_value = "http://localhost:8080/onkostar/x-api",
+        env = "ONKOSTAR_URL",
+        default_value = "http://localhost:8080/onkostar",
         help = "The X-API URL"
     )]
-    pub api_url: String,
+    pub onkostar_url: String,
 }

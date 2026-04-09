@@ -31,7 +31,7 @@ impl ApiClient {
     pub async fn dashboard(&self, user: User) -> Result<DashboardResponse, String> {
         let response = self
             .http_client
-            .get(self.full_url("/mv-dashboard"))
+            .get(self.full_url("/x-api/mv-dashboard"))
             .basic_auth(user.username(), Some(&user.password()))
             .send()
             .await
