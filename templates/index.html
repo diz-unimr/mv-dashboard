@@ -39,7 +39,10 @@
 
     {% for case in cases %}
     {% if case.is_valid() %}<section class="case">{% else %}<section class="case invalid">{% endif %}
-        <h3>{{ case.formatted_case_id() }}</h3>
+        {% match case.onkostar_url() %}
+        {% when Some(url) %}<h3>{{ case.formatted_case_id() }} <a href="{{ url }}" target="_blank">In Onkostar öffnen</a></h3>
+        {% when None %}<h3>{{ case.formatted_case_id() }}</h3>
+        {% endmatch %}
         <div class="case-details">
             <div class="case-detail">
                 <h4>Teilnahmeerklärung MVH</h4>
@@ -126,10 +129,14 @@
                     <p>
                         <time datetime="{{ clinical_submission.date }}">{{ clinical_submission.date }}</time>
                     </p>
+                    {% if clinical_submission.id.is_empty() %}
+                    <p class="warning-part">ohne Kennung</p>
+                    {% else %}
                     <p>mit Kennung <code>{{ clinical_submission.id }}</code></p>
+                    {% endif %}
                     {% endwhen %}
                     {% when None %}
-                    <p class="missing-part">Keine Meldebestätigung KDK</p>
+                    <p class="invalid-part">Keine Meldebestätigung KDK</p>
                     {% endwhen %}
                     {% endmatch %}
                 </div>
@@ -147,7 +154,7 @@
                     {% endif %}
                     {% endwhen %}
                     {% when None %}
-                    <p class="missing-part">Keine Meldebestätigung GRZ</p>
+                    <p class="invalid-part">Keine Meldebestätigung GRZ</p>
                     {% endwhen %}
                     {% endmatch %}
                 </div>

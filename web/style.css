@@ -111,6 +111,24 @@ section.case h3 {
 section.case.invalid h3 {
     @apply bg-red-800
 }
+
+section.case h3 a {
+    @apply text-white font-normal text-base ml-4 px-2 rounded-md;
+}
+
+section.case h3 a:before {
+    @apply mr-2 text-sm;
+    content: "🏥"
+}
+
+section.case h3 a:hover {
+    @apply bg-green-900
+}
+
+section.case.invalid h3 a:hover {
+    @apply bg-red-900
+}
+
 section.case > div.case-details {
     @apply flex flex-row
 }

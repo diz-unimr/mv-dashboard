@@ -1,3 +1,4 @@
+use crate::CONFIG;
 use crate::auth::User;
 use regex::Regex;
 
@@ -58,6 +59,7 @@ pub(crate) struct DashboardResponse {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Case {
     pub(crate) case_id: String,
+    pub(crate) guid: Option<String>,
     pub(crate) mtb: Option<Mtb>,
     pub(crate) mv_consent: Option<MvConsent>,
     pub(crate) broad_consent: Option<BroadConsent>,
@@ -92,6 +94,17 @@ impl Case {
             && self.broad_consent.is_some()
             && self.mv_consent.is_some()
             && self.genomic_submission.is_some()
+    }
+
+    pub fn onkostar_url(&self) -> Option<String> {
+        if let Some(guid) = &self.guid {
+            return Some(format!(
+                "{}/index.html?procedureId={}",
+                &CONFIG.onkostar_url, guid
+            ));
+        };
+
+        None
     }
 }
 
