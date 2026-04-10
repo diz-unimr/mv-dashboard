@@ -103,51 +103,56 @@ section.case,
     border-radius: .3rem;
 }
 
-section.case h3 {
-    @apply text-lg bg-green-800 px-2 font-bold;
+section.case summary {
+    @apply text-lg bg-green-800 px-2 font-bold relative;
     color: white;
 }
 
-section.case.invalid h3 {
+section.case.invalid summary {
     @apply bg-red-800
 }
 
-section.case h3 a {
-    @apply text-white font-normal text-base ml-4 px-2 rounded-md;
+section.case summary a {
+    @apply text-white font-normal text-base px-2 h-full;
+    border-left: 1px solid rgba(255,255,255,.4);
 }
 
-section.case h3 a:before {
+section.case summary a:before {
     @apply mr-2 text-sm;
     content: "🏥"
 }
 
-section.case h3 a:hover {
+section.case summary a:hover {
     @apply bg-green-900
 }
 
-section.case.invalid h3 a:hover {
+section.case.invalid summary a:hover {
     @apply bg-red-900
 }
 
-section.case > div.case-details {
+section.case summary a:last-child {
+    @apply absolute right-0;
+}
+
+section.case div.case-details {
     @apply flex flex-row
 }
 
-section.case > div.case-details > div {
+section.case div.case-details > div {
     @apply py-2 px-6 w-1/4 min-h-40 bg-green-100;
     clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%, 5% 50%);
 }
 
-section.case > div.case-details > div:first-child {
+section.case div.case-details > div:first-child {
     clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%, 0 50%);
 }
 
-section.case > div.case-details > div.stacked {
+section.case div.case-details > div.stacked {
     @apply pl-2 p-0 grid grid-rows-2 gap-2 bg-transparent;
     clip-path: none;
 }
 
-section.case > div.case-details > div.stacked > div {
+section.case div.case-details > div.stacked > div {
     @apply py-2 px-6 bg-green-100;
     clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 2.5% 50%);
 }
@@ -167,11 +172,11 @@ section.case div.stacked > div.case-detail:has(.missing-part) {
     @apply bg-gray-200;
 }
 
-section.case > div.case-details h4 {
+section.case div.case-details h4 {
     @apply font-bold;
 }
 
-section.case > div.case-details code {
+section.case div.case-details code {
     @apply bg-gray-200 font-mono p-1;
 }
 
