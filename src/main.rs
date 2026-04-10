@@ -14,7 +14,8 @@ use include_dir::{Dir, include_dir};
 use log::error;
 use std::path;
 use std::sync::LazyLock;
-use tower_sessions::MemoryStore;
+use tower_sessions::cookie::time::Duration;
+use tower_sessions::{Expiry, MemoryStore};
 
 pub mod api_client;
 pub mod auth;
@@ -46,10 +47,11 @@ fn routes() -> axum::Router {
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
     let protected_routes = axum::Router::new()
-        .route("/mv-dashboard", get(handle_request))
+        .route("/mv-dashboard", get(handle_index_request))
         .layer(login_required!(Backend, login_url = "/mv-dashboard/login"));
 
     axum::Router::new()
+        .route("/mv-dashboard/cases", get(handle_cases_request))
         .route("/mv-dashboard/login", get(show_login).post(handle_login))
         .route("/mv-dashboard/logout", get(handle_logout))
         .route(
@@ -64,10 +66,15 @@ fn routes() -> axum::Router {
 #[template(path = "index.html")]
 struct IndexTemplate {
     username: String,
+}
+
+#[derive(Template)]
+#[template(path = "fragments/cases.html")]
+struct CasesTemplate {
     cases: Vec<Case>,
 }
 
-impl IndexTemplate {
+impl CasesTemplate {
     fn case_count(&self) -> usize {
         self.cases.len()
     }
@@ -90,22 +97,40 @@ async fn show_login() -> Result<impl IntoResponse, String> {
     Ok(Html(template.render().unwrap()))
 }
 
-async fn handle_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
+async fn handle_index_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
+
+    let template = IndexTemplate {
+        username: user.username().to_string(),
+    };
+    Ok(Html(template.render().unwrap()))
+}
+
+async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
+    let Some(user) = auth.user.clone() else {
+        return Ok(Response::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .body("Not logged in".to_string())
+            .unwrap_or_default()
+            .into_response());
+    };
 
     let response = match API_CLIENT.dashboard(user.clone()).await {
         Ok(data) => data,
         Err(e) => {
             error!("{e}");
-            return Ok(Html("Cannot connect to X-API".to_string()));
+            return Ok(Response::builder()
+                .status(500)
+                .body("Cannot connect to X-API".to_string())
+                .unwrap_or_default()
+                .into_response());
         }
     };
 
-    let template = IndexTemplate {
-        username: user.username().to_string(),
+    let template = CasesTemplate {
         cases: response.cases,
     };
-    Ok(Html(template.render().unwrap()))
+    Ok(Html(template.render().unwrap()).into_response())
 }
 
 async fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {

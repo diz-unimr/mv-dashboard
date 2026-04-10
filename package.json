@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "",
   "dependencies": {
+    "htmx.org": "~2.0.8",
     "tailwindcss": "~4.2.2"
   },
   "devDependencies": {

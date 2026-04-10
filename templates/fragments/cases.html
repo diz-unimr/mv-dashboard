@@ -1,0 +1,165 @@
+<div id="cases">
+<h1>MVH-Dashboard</h1>
+
+<p>
+    Aufgeführt sind alle Fälle aus Onkostar, sortiert nach H-Nummer.
+</p>
+
+{% if cases.len() > 0 %}
+
+<div class="case-count">
+    <span>
+        Es gibt <b>{{ case_count() }}</b> Fälle in Onkostar.
+        Davon abgeschlossen: <b class="valid-case-count">{{ valid_case_count() }}</b>,
+        noch offen: <b class="invalid-case-count">{{ invalid_case_count() }}</b>.
+    </span>
+    <span id="options">
+        <span>
+            <input id="hideCompletedCases" type="checkbox" onchange="window.hideCompletedCases(this.checked)" />
+            <label for="hideCompletedCases">Nur offene Fälle zeigen</label>
+        </span>
+        <span>
+            <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
+            <label for="openAllCases">Alle Fälle ausklappen</label>
+        </span>
+        <span>
+            <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
+        </span>
+    </span>
+</div>
+
+{% for case in cases %}
+<section {% if case.is_valid() %} class="case valid" {% else %}class="case invalid" {% endif %}>
+    <details {% if !case.is_valid() %} open {% endif %}>
+        <summary>
+            {% if case.is_valid() %} ✅ {% else %} 😱 {% endif %}
+            {% match case.onkostar_url() %}
+            {% when Some(url) %}<span>{{ case.formatted_case_id() }} <a href="{{ url }}" target="_blank">In Onkostar öffnen</a></span>
+            {% when None %}<span>{{ case.formatted_case_id() }}</span>
+            {% endmatch %}
+        </summary>
+        <div class="case-details">
+            <div class="case-detail">
+                <h4>Teilnahmeerklärung MVH</h4>
+                {% match case.mv_consent %}
+                {% when Some(mv_consent) %}
+                <p>
+                    <time datetime="{{ mv_consent.consent_date }}">{{ mv_consent.consent_date }}</time>
+                </p>
+                {%if mv_consent.sequencing %}
+                <ul>
+                    <li>Sequenzierung zugestimmt</li>
+                    {% else %}
+                    <li>Sequenzierung nicht zugestimmt</li>
+                    {% endif %}
+                    {%if mv_consent.case_identification %}
+                    <li>Fallidentifikation zugestimmt</li>
+                    {% else %}
+                    <li>Falldentifikation nicht zugestimmt</li>
+                    {% endif %}
+                    {%if mv_consent.re_identification %}
+                    <li>Reidentifizierung zugestimmt</li>
+                    {% else %}
+                    <li>Reidentifizierung nicht zugestimmt</li>
+                    {% endif %}
+                </ul>
+                {% endwhen %}
+                {% when None %}
+                <p class="invalid-part">Keine Teilnahmeerklärung</p>
+                {% endwhen %}
+                {% endmatch %}
+            </div>
+            <div class="case-detail">
+                <h4>Broad-Consent</h4>
+                {% match case.broad_consent %}
+                {% when Some(broad_consent) %}
+                <p>
+                    <time datetime="{{ broad_consent.consent_date }}">{{ broad_consent.consent_date }}</time>
+                </p>
+                <p>
+                    Der Broad-Consent liegt in elektronischer Form vor.
+                </p>
+                {% endwhen %}
+                {% when None %}
+                <p class="invalid-part">Kein Broad-Consent in elektonischer Form</p>
+                {% endwhen %}
+                {% endmatch %}
+            </div>
+            <div class="case-detail">
+                <h4>MTB Anmeldung</h4>
+                {% match case.mtb %}
+                {% when Some(mtb) %}
+                <p>
+                    <time datetime="{{ mtb.registration_date }}">{{ mtb.registration_date }}</time>
+                </p>
+                <div>
+                    {% match mtb.care_plans %}
+                    {% when Some(care_plans) %}
+                    <p>{{ care_plans.len() }} {{ care_plans.len() | pluralize("Therapieplan", "Therapiepläne") }}</p>
+                    <ul>
+                        {% for plan in care_plans %}
+                        <li>
+                            MTB am
+                            <time datetime="{{ plan.date }}">{{ plan.date }}</time>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endwhen %}
+                    {% when None %}
+                    <p class="warning-part">Keine Therapiepläne</p>
+                    {% endwhen %}
+                    {% endmatch %}
+                </div>
+                {% endwhen %}
+                {% when None %}
+                <p class="invalid-part">Keine Anmeldung zum MTB</p>
+                {% endwhen %}
+                {% endmatch %}
+            </div>
+            <div class="stacked">
+                <div class="case-detail">
+                    <h4>Meldebestätigung KDK</h4>
+                    {% match case.clinical_submission %}
+                    {% when Some(clinical_submission) %}
+                    <p>
+                        <time datetime="{{ clinical_submission.date }}">{{ clinical_submission.date }}</time>
+                    </p>
+                    {% if clinical_submission.id.is_empty() %}
+                    <p class="warning-part">ohne Kennung</p>
+                    {% else %}
+                    <p>mit Kennung <code>{{ clinical_submission.id }}</code></p>
+                    {% endif %}
+                    {% endwhen %}
+                    {% when None %}
+                    <p class="invalid-part">Keine Meldebestätigung KDK</p>
+                    {% endwhen %}
+                    {% endmatch %}
+                </div>
+                <div class="case-detail">
+                    <h4>Meldebestätigung GRZ</h4>
+                    {% match case.genomic_submission %}
+                    {% when Some(genomic_submission) %}
+                    <p>
+                        <time datetime="{{ genomic_submission.date }}">{{ genomic_submission.date }}</time>
+                    </p>
+                    {% if genomic_submission.id.is_empty() %}
+                    <p class="warning-part">ohne Kennung</p>
+                    {% else %}
+                    <p>mit Kennung <code>{{ genomic_submission.id }}</code></p>
+                    {% endif %}
+                    {% endwhen %}
+                    {% when None %}
+                    <p class="invalid-part">Keine Meldebestätigung GRZ</p>
+                    {% endwhen %}
+                    {% endmatch %}
+                </div>
+            </div>
+        </div>
+    </details>
+</section>
+{% endfor %}
+
+{% else %}
+<b>Keine Fälle gefunden</b>
+{% endif %}
+</div>

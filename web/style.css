@@ -5,7 +5,7 @@ body {
 }
 
 nav {
-    @apply bg-gray-600 text-white p-4 mb-4 flex flex-row justify-between;
+    @apply bg-gray-600 text-white p-4 flex flex-row justify-between;
     min-height: 5rem;
 }
 
@@ -105,7 +105,7 @@ section.case,
 }
 
 section.case summary {
-    @apply text-lg bg-gray-800 px-2 py-1 font-bold relative cursor-pointer;
+    @apply text-lg bg-gray-800 px-2 font-bold relative cursor-pointer;
     color: white;
 }
 
@@ -220,4 +220,17 @@ section.case div.case-details code {
 
 .case-count #options span {
     @apply mx-2;
+}
+
+.case-count #options button {
+    @apply bg-green-800 ;
+}
+
+.loading-indicator {
+    @apply opacity-0 transition-opacity duration-200 invisible p-1 bg-green-600 text-white text-sm text-center font-bold shadow-sm rounded-b-md;
+}
+
+.htmx-request.loading-indicator,
+.htmx-request .loading-indicator {
+    @apply opacity-100 visible;
 }

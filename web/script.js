@@ -1,4 +1,5 @@
 import * as styles from './style.css';
+import 'htmx.org'
 
 const dateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 const dateTimeFormat = new Intl.DateTimeFormat('de-DE', dateTimeFormatOptions);
@@ -12,13 +13,30 @@ const formatTimeElements = () => {
     });
 };
 
-window.addEventListener('load', () => {
-    formatTimeElements();
+const openAllCasesCheckbox = () => {
     document.querySelectorAll('section.case details').forEach((details) => {
         details.addEventListener('click', (event) => {
             document.getElementById('openAllCases').checked = false;
         });
     })
+}
+
+window.addEventListener('load', () => {
+    formatTimeElements();
+    openAllCasesCheckbox();
+});
+
+window.addEventListener('htmx:afterRequest', () => {
+    formatTimeElements();
+    openAllCasesCheckbox();
+});
+
+window.addEventListener('htmx:responseError', (event) => {
+    window.location.reload();
+});
+
+window.addEventListener('htmx:loadError', (event) => {
+    window.location.reload();
 });
 
 export function hideCompletedCases(value) {
