@@ -3,8 +3,9 @@ use crate::auth::{Backend, handle_login, handle_logout};
 use askama::Template;
 use axum::body::Body;
 use axum::extract::Path;
-use axum::http::StatusCode;
 use axum::http::header::CONTENT_TYPE;
+use axum::http::{Request, StatusCode};
+use axum::middleware::{Next, from_fn};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_login::tower_sessions::SessionManagerLayer;
@@ -52,8 +53,27 @@ fn routes() -> axum::Router {
         .route("/mv-dashboard", get(handle_index_request))
         .layer(login_required!(Backend, login_url = "/mv-dashboard/login"));
 
-    axum::Router::new()
+    async fn check_ajax_auth(
+        auth: AuthSession<Backend>,
+        req: Request<Body>,
+        next: Next,
+    ) -> Response {
+        if auth.user.is_some() {
+            return next.run(req).await;
+        }
+
+        Response::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .body("Not logged in".to_string())
+            .unwrap_or_default()
+            .into_response()
+    }
+
+    let ajax_routes = axum::Router::new()
         .route("/mv-dashboard/cases", get(handle_cases_request))
+        .layer(from_fn(check_ajax_auth));
+
+    axum::Router::new()
         .route("/mv-dashboard/login", get(show_login).post(handle_login))
         .route("/mv-dashboard/logout", get(handle_logout))
         .route(
@@ -61,6 +81,7 @@ fn routes() -> axum::Router {
             get(|path| async { serve_asset(path).await }),
         )
         .merge(protected_routes)
+        .merge(ajax_routes)
         .layer(auth_layer)
 }
 
@@ -109,13 +130,7 @@ async fn handle_index_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 }
 
 async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
-    let Some(user) = auth.user.clone() else {
-        return Ok(Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .body("Not logged in".to_string())
-            .unwrap_or_default()
-            .into_response());
-    };
+    let user = auth.user.clone().unwrap_or_default();
 
     let response = match API_CLIENT.dashboard(user.clone()).await {
         Ok(data) => data,
