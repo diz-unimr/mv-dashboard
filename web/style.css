@@ -44,6 +44,7 @@ time {
 }
 
 button,
+input[type=checkbox],
 input[type=radio] {
     @apply cursor-pointer
 }
@@ -104,8 +105,12 @@ section.case,
 }
 
 section.case summary {
-    @apply text-lg bg-green-800 px-2 font-bold relative;
+    @apply text-lg bg-gray-800 px-2 font-bold relative cursor-pointer;
     color: white;
+}
+
+section.case.valid summary {
+    @apply bg-green-800;
 }
 
 section.case.invalid summary {
@@ -122,12 +127,20 @@ section.case summary a:before {
     content: "🏥"
 }
 
-section.case summary a:hover {
+section.case summary a {
     @apply bg-green-900
 }
 
-section.case.invalid summary a:hover {
+section.case.invalid summary a {
     @apply bg-red-900
+}
+
+section.case summary a:hover {
+    @apply bg-green-950
+}
+
+section.case.invalid summary a:hover {
+    @apply bg-red-950
 }
 
 section.case summary a:last-child {
@@ -181,7 +194,11 @@ section.case div.case-details code {
 }
 
 .case-count {
-    @apply p-4 font-bold bg-gray-100;
+    @apply font-bold bg-gray-100 relative;
+}
+
+.case-count span:first-child {
+    @apply p-4 inline-block;
 }
 
 .case-count b {
@@ -194,4 +211,13 @@ section.case div.case-details code {
 
 .case-count b.invalid-case-count {
     @apply bg-red-800;
+}
+
+.case-count #options {
+    @apply absolute right-0 px-4 h-full font-normal bg-gray-200 border-l-gray-300;
+    border-left-width: 1px;
+}
+
+.case-count #options span {
+    @apply mx-2;
 }

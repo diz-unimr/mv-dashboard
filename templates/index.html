@@ -31,14 +31,26 @@
 
     {% if cases.len() > 0 %}
 
-    <p class="case-count">
-        Es gibt <b>{{ case_count() }}</b> Fälle in Onkostar.
-        Davon abgeschlossen: <b class="valid-case-count">{{ valid_case_count() }}</b>,
-        noch offen: <b class="invalid-case-count">{{ invalid_case_count() }}</b>.
-    </p>
+    <div class="case-count">
+        <span>
+            Es gibt <b>{{ case_count() }}</b> Fälle in Onkostar.
+            Davon abgeschlossen: <b class="valid-case-count">{{ valid_case_count() }}</b>,
+            noch offen: <b class="invalid-case-count">{{ invalid_case_count() }}</b>.
+        </span>
+        <span id="options">
+            <span>
+                <input id="hideCompletedCases" type="checkbox" onchange="window.hideCompletedCases(this.checked)" />
+                <label for="hideCompletedCases">Nur offene Fälle zeigen</label>
+            </span>
+            <span>
+                <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
+                <label for="openAllCases">Alle Fälle ausklappen</label>
+            </span>
+        </span>
+    </div>
 
     {% for case in cases %}
-    <section {% if case.is_valid() %} class="case" {% else %}class="case invalid" {% endif %}>
+    <section {% if case.is_valid() %} class="case valid" {% else %}class="case invalid" {% endif %}>
         <details {% if !case.is_valid() %} open {% endif %}>
             <summary>
                 {% if case.is_valid() %} ✅ {% else %} 😱 {% endif %}
