@@ -105,7 +105,7 @@ section.case,
 }
 
 section.case summary {
-    @apply text-lg bg-gray-800 px-2 font-bold relative cursor-pointer;
+    @apply text-lg bg-gray-800 px-2 py-1 font-bold relative cursor-pointer;
     color: white;
 }
 
