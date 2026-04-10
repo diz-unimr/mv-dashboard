@@ -33,7 +33,9 @@ fn routes() -> axum::Router {
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("mv-dashboard-session")
         .with_path("/mv-dashboard")
-        .with_secure(false);
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(Duration::minutes(30)))
+        .with_always_save(true);
 
     let session_layer = if let Some(cookie_domain) = &CONFIG.cookie_domain {
         log::info!("Using cookie domain: {}", cookie_domain);
