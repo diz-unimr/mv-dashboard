@@ -81,16 +81,16 @@
                 </p>
                 {% endwhen %}
                 {% when None %}
-                <p class="invalid-part">Kein Broad-Consent in elektonischer Form</p>
+                <p class="invalid-part">Kein Broad-Consent in elektronischer Form</p>
                 {% endwhen %}
                 {% endmatch %}
             </div>
             <div class="case-detail">
-                <h4>MTB Anmeldung</h4>
+                <h4>MTB Episode</h4>
                 {% match case.mtb %}
                 {% when Some(mtb) %}
                 <p>
-                    <time datetime="{{ mtb.registration_date }}">{{ mtb.registration_date }}</time>
+                    Anmeldung am: <time datetime="{{ mtb.registration_date }}">{{ mtb.registration_date }}</time>
                 </p>
                 <div>
                     {% match mtb.care_plans %}
@@ -112,7 +112,7 @@
                 </div>
                 {% endwhen %}
                 {% when None %}
-                <p class="invalid-part">Keine Anmeldung zum MTB</p>
+                <p class="invalid-part">Kein MTB mit H-Nummer</p>
                 {% endwhen %}
                 {% endmatch %}
             </div>
