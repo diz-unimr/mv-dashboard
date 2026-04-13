@@ -143,6 +143,10 @@ section.case.invalid summary a:hover {
     @apply bg-red-950
 }
 
+section.case summary span.deceased {
+    @apply ml-4 font-normal;
+}
+
 section.case summary a:last-child {
     @apply absolute right-0;
 }

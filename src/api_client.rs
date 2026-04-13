@@ -63,6 +63,8 @@ pub(crate) struct DashboardResponse {
 pub(crate) struct Case {
     pub(crate) case_id: String,
     pub(crate) guid: Option<String>,
+    pub(crate) deceased: Option<bool>,
+    pub(crate) deceased_at_first_mtb: Option<bool>,
     pub(crate) mtb: Option<Mtb>,
     pub(crate) mv_consent: Option<MvConsent>,
     pub(crate) broad_consent: Option<BroadConsent>,
@@ -92,12 +94,19 @@ impl Case {
     }
 
     pub fn is_valid(&self) -> bool {
-        self.mtb.is_some()
-            && self.is_first_mtb_after_mv_consent()
+        self.is_first_mtb_after_mv_consent()
             && self.broad_consent.is_some()
             && self.mtb.is_some()
             && self.clinical_submission.is_some()
             && self.genomic_submission.is_some()
+            && match &self.mv_consent {
+                Some(mv_consent) => mv_consent.is_valid(),
+                None => false,
+            }
+            && match &self.deceased_at_first_mtb {
+                Some(deceased_at_first_mtb) => !*deceased_at_first_mtb,
+                None => true,
+            }
     }
 
     pub fn has_valid_case_number(&self) -> bool {
@@ -224,6 +233,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            deceased: None,
+            deceased_at_first_mtb: None,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -259,6 +270,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            deceased: None,
+            deceased_at_first_mtb: None,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -299,6 +312,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            deceased: None,
+            deceased_at_first_mtb: None,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -334,6 +349,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            deceased: None,
+            deceased_at_first_mtb: None,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,

@@ -41,21 +41,24 @@
     <details {% if !case.is_valid() %} open {% endif %}>
         <summary>
             {% if case.is_valid() %} ✅ {% else %} 😱 {% endif %}
-            {% match case.onkostar_url() %}
-            {% when Some(url) %}<span>{{ case.formatted_case_id() }} <a href="{{ url }}" target="_blank">In Onkostar öffnen</a></span>
-            {% when None %}<span>{{ case.formatted_case_id() }}</span>
-            {% endmatch %}
+            <span>{{ case.formatted_case_id() }}</span>
+            {% if Some(true) == case.deceased %}
+            <span class="deceased">✝️ Patient verstorben</span>
+            {% endif %}
+            {% if let Some(url) = case.onkostar_url() %}
+            <a href="{{ url }}" target="_blank">In Onkostar öffnen</a>
+            {% endif %}
         </summary>
         <div class="case-details">
             <div class="case-detail">
                 <h4>Teilnahmeerklärung MVH</h4>
                 {% match case.mv_consent %}
                 {% when Some(mv_consent) %}
-                <p>
+                <p {%if !mv_consent.sequencing %} class="invalid-part" {% endif %}>
                     <time datetime="{{ mv_consent.consent_date }}">{{ mv_consent.consent_date }}</time>
                 </p>
-                {%if mv_consent.sequencing %}
                 <ul>
+                    {%if mv_consent.sequencing %}
                     <li>Sequenzierung zugestimmt</li>
                     {% else %}
                     <li>Sequenzierung nicht zugestimmt</li>
@@ -100,6 +103,11 @@
                 <p>
                     Anmeldung am: <time datetime="{{ mtb.registration_date }}">{{ mtb.registration_date }}</time>
                 </p>
+                {% if Some(true) == case.deceased_at_first_mtb %}
+                <p class="invalid-part">
+                    <b>✝️ Patient verstorben vor Indikationsstellung</b>
+                </p>
+                {% endif %}
                 <div>
                     {% match mtb.care_plans %}
                     {% when Some(care_plans) %}
