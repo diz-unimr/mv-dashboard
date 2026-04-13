@@ -100,6 +100,10 @@ impl Case {
             && self.genomic_submission.is_some()
     }
 
+    pub fn has_valid_case_number(&self) -> bool {
+        !self.case_id.starts_with("!")
+    }
+
     pub fn onkostar_url(&self) -> Option<String> {
         if let Some(guid) = &self.guid {
             return Some(format!(

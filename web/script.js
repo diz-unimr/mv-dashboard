@@ -39,10 +39,20 @@ window.addEventListener('htmx:loadError', (event) => {
     window.location.reload();
 });
 
-export function hideCompletedCases(value) {
-    Array.from(document.querySelectorAll('section.case.valid')).forEach((section) => {
-        section.style.display = value === true ? 'none' : 'block';
+export function changeVisibility(value) {
+    Array.from(document.querySelectorAll('section.case')).forEach((section) => {
+        section.style.display = 'block';
     });
+
+    if (value === 'open') {
+        Array.from(document.querySelectorAll('section.case.valid')).forEach((section) => {
+            section.style.display = 'none';
+        });
+    } else if (value === 'withh') {
+        Array.from(document.querySelectorAll('section.case.noh')).forEach((section) => {
+            section.style.display = 'none';
+        })
+    }
 }
 
 export function openAllCases(value) {

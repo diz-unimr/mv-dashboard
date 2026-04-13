@@ -15,8 +15,11 @@
     </span>
     <span id="options">
         <span>
-            <input id="hideCompletedCases" type="checkbox" onchange="window.hideCompletedCases(this.checked)" />
-            <label for="hideCompletedCases">Nur offene Fälle zeigen</label>
+            <select id="visibility" onchange="window.changeVisibility(this.value)">
+                <option value="all">Alle Fälle anzeigen</option>
+                <option value="open">Nur offene Fälle anzeigen</option>
+                <option value="withh">Nur Fälle mit H-Nummer anzeigen</option>
+            </select>
         </span>
         <span>
             <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
@@ -29,7 +32,12 @@
 </div>
 
 {% for case in cases %}
-<section {% if case.is_valid() %} class="case valid" {% else %}class="case invalid" {% endif %}>
+<section
+        {% if case.is_valid() %}
+        class="case valid"
+        {% else %}
+        {% if case.has_valid_case_number() %} class="case invalid" {% else %} class="case invalid noh" {% endif %}
+        {% endif %}>
     <details {% if !case.is_valid() %} open {% endif %}>
         <summary>
             {% if case.is_valid() %} ✅ {% else %} 😱 {% endif %}

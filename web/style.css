@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-body {
-
-}
-
 nav {
     @apply bg-gray-600 text-white p-4 flex flex-row justify-between;
     min-height: 5rem;
@@ -59,6 +55,10 @@ input[type=text], input[type=password] {
 input[type=text]:focus-visible,
 input[type=password]:focus-visible {
     @apply border-b-green-900
+}
+
+select {
+    @apply appearance-none bg-gray-300 px-4 py-2 rounded pr-8;
 }
 
 .login-form {
@@ -194,11 +194,13 @@ section.case div.case-details code {
 }
 
 .case-count {
-    @apply font-bold bg-gray-100 relative;
+    @apply h-16 font-bold bg-gray-100 flex flex-row;
+    align-content: center;
 }
 
-.case-count span:first-child {
-    @apply p-4 inline-block;
+.case-count > span {
+    @apply flex-1 px-2;
+    align-content: center;
 }
 
 .case-count b {
@@ -214,12 +216,13 @@ section.case div.case-details code {
 }
 
 .case-count #options {
-    @apply absolute right-0 px-4 h-full font-normal bg-gray-200 border-l-gray-300;
+    @apply font-normal bg-gray-200 border-l-gray-300 flex justify-end;
     border-left-width: 1px;
 }
 
-.case-count #options span {
-    @apply mx-2;
+.case-count #options > span {
+    @apply px-2;
+    align-content: center;
 }
 
 .case-count #options button {
