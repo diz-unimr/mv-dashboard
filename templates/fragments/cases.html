@@ -16,9 +16,9 @@
     <span id="options">
         <span>
             <select id="visibility" onchange="window.changeVisibility(this.value)">
-                <option value="all">Alle Fälle anzeigen</option>
-                <option value="open">Nur offene Fälle anzeigen</option>
-                <option value="withh">Nur Fälle mit H-Nummer anzeigen</option>
+                <option value="all">Alle Fälle anzeigen ({{ case_count() }})</option>
+                <option value="open">Nur offene Fälle anzeigen ({{ invalid_case_count() }})</option>
+                <option value="withh">Nur Fälle mit H-Nummer anzeigen ({{ hnummer_case_count() }})</option>
             </select>
         </span>
         <span>

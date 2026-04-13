@@ -109,6 +109,13 @@ impl CasesTemplate {
     fn invalid_case_count(&self) -> usize {
         self.cases.iter().filter(|case| !case.is_valid()).count()
     }
+
+    fn hnummer_case_count(&self) -> usize {
+        self.cases
+            .iter()
+            .filter(|case| case.has_valid_case_number())
+            .count()
+    }
 }
 
 #[derive(Template)]
