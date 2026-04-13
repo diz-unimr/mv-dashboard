@@ -1,5 +1,8 @@
 use crate::CONFIG;
 use crate::auth::User;
+use chrono::NaiveDate;
+use itertools::{Itertools, sorted};
+use log::error;
 use regex::Regex;
 
 pub(crate) struct ApiClient {
@@ -90,7 +93,7 @@ impl Case {
 
     pub fn is_valid(&self) -> bool {
         self.mtb.is_some()
-            && self.first_mtb_after_mv_consent()
+            && self.is_first_mtb_after_mv_consent()
             && self.broad_consent.is_some()
             && self.mtb.is_some()
             && self.clinical_submission.is_some()
@@ -108,7 +111,7 @@ impl Case {
         None
     }
 
-    pub fn first_mtb_after_mv_consent(&self) -> bool {
+    pub fn is_first_mtb_after_mv_consent(&self) -> bool {
         if let Some(mv_consent) = &self.mv_consent
             && let Some(mtb) = &self.mtb
         {
@@ -116,20 +119,20 @@ impl Case {
                 return false;
             };
 
-            if let Some(first_care_plan) = care_plans.first() {
+            if let Some(first_care_plan) = sorted(care_plans).collect_vec().first() {
                 let Ok(mv_consent_date) =
-                    chrono::NaiveDate::parse_from_str(&mv_consent.consent_date, "%d.%m.%Y")
+                    NaiveDate::parse_from_str(&mv_consent.consent_date, "%Y-%m-%d")
                 else {
+                    error!("{:?}", mv_consent.consent_date);
                     return false;
                 };
                 let Ok(first_care_plan_date) =
-                    chrono::NaiveDate::parse_from_str(&first_care_plan.date, "%d.%m.%Y")
+                    NaiveDate::parse_from_str(&first_care_plan.date, "%Y-%m-%d")
                 else {
                     return false;
                 };
                 return mv_consent_date <= first_care_plan_date;
             }
-
             return false;
         }
         false
@@ -143,10 +146,28 @@ pub(crate) struct Mtb {
     pub(crate) care_plans: Option<Vec<CarePlan>>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CarePlan {
     pub(crate) date: String,
+}
+
+impl PartialOrd for CarePlan {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for CarePlan {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.naive_date().cmp(&other.naive_date())
+    }
+}
+
+impl CarePlan {
+    pub fn naive_date(&self) -> Option<NaiveDate> {
+        NaiveDate::parse_from_str(&self.date, "%Y-%m-%d").ok()
+    }
 }
 
 trait Consent {
@@ -192,6 +213,7 @@ pub(crate) struct Submission {
 #[cfg(test)]
 mod tests {
     use crate::api_client::{BroadConsent, CarePlan, Case, Mtb, MvConsent, Submission};
+    use itertools::{Itertools, sorted};
 
     #[test]
     fn test_should_find_first_mtb_before_mv_consent() {
@@ -199,24 +221,24 @@ mod tests {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             mv_consent: Some(MvConsent {
-                consent_date: "01.04.2026".to_string(),
+                consent_date: "2026-04-01".to_string(),
                 sequencing: true,
                 case_identification: true,
                 re_identification: true,
             }),
             broad_consent: Some(BroadConsent {
-                consent_date: "01.04.2026".to_string(),
+                consent_date: "2026-04-01".to_string(),
                 electronic_available: true,
             }),
             mtb: Some(Mtb {
-                registration_date: "13.04.2026".to_string(),
+                registration_date: "2026-04-13".to_string(),
                 care_plans: Some(vec![CarePlan {
-                    date: "13.04.2026".to_string(),
+                    date: "2026-04-13".to_string(),
                 }]),
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
-                date: "13.04.2026".to_string(),
+                date: "2026-04-13".to_string(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
@@ -225,7 +247,47 @@ mod tests {
         };
 
         assert!(case.is_valid());
-        assert!(case.first_mtb_after_mv_consent())
+        assert!(case.is_first_mtb_after_mv_consent())
+    }
+
+    #[test]
+    fn test_should_find_first_mtb_same_day_mv_consent() {
+        let case = Case {
+            case_id: "H1234-26".to_string(),
+            guid: Some("TESTGUID".to_string()),
+            mv_consent: Some(MvConsent {
+                consent_date: "2026-04-01".to_string(),
+                sequencing: true,
+                case_identification: true,
+                re_identification: true,
+            }),
+            broad_consent: Some(BroadConsent {
+                consent_date: "2026-04-13".to_string(),
+                electronic_available: true,
+            }),
+            mtb: Some(Mtb {
+                registration_date: "2026-04-13".to_string(),
+                care_plans: Some(vec![
+                    CarePlan {
+                        date: "2026-04-12".to_string(),
+                    },
+                    CarePlan {
+                        date: "2026-04-14".to_string(),
+                    },
+                ]),
+            }),
+            clinical_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-13".to_string(),
+            }),
+            genomic_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-13".to_string(),
+            }),
+        };
+
+        assert!(case.is_valid());
+        assert!(case.is_first_mtb_after_mv_consent())
     }
 
     #[test]
@@ -234,33 +296,33 @@ mod tests {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             mv_consent: Some(MvConsent {
-                consent_date: "01.04.2026".to_string(),
+                consent_date: "2026-04-01".to_string(),
                 sequencing: true,
                 case_identification: true,
                 re_identification: true,
             }),
             broad_consent: Some(BroadConsent {
-                consent_date: "01.04.2026".to_string(),
+                consent_date: "2026-04-01".to_string(),
                 electronic_available: true,
             }),
             mtb: Some(Mtb {
-                registration_date: "31.03.2026".to_string(),
+                registration_date: "2026-03-31".to_string(),
                 care_plans: Some(vec![CarePlan {
-                    date: "31.03.2026".to_string(),
+                    date: "2026-03-31".to_string(),
                 }]),
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
-                date: "13.04.2026".to_string(),
+                date: "2026-04-13".to_string(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
-                date: "13.04.2026".to_string(),
+                date: "2026-04-13".to_string(),
             }),
         };
 
         assert!(!case.is_valid());
-        assert!(!case.first_mtb_after_mv_consent())
+        assert!(!case.is_first_mtb_after_mv_consent())
     }
 
     #[test]
@@ -269,30 +331,55 @@ mod tests {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             mv_consent: Some(MvConsent {
-                consent_date: "01.04.2026".to_string(),
+                consent_date: "2026-04-01".to_string(),
                 sequencing: true,
                 case_identification: true,
                 re_identification: true,
             }),
             broad_consent: Some(BroadConsent {
-                consent_date: "01.04.2026".to_string(),
+                consent_date: "2026-04-01".to_string(),
                 electronic_available: true,
             }),
             mtb: Some(Mtb {
-                registration_date: "31.03.2026".to_string(),
+                registration_date: "2026-03-31".to_string(),
                 care_plans: None,
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
-                date: "13.04.2026".to_string(),
+                date: "2026-04-13".to_string(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
-                date: "13.04.2026".to_string(),
+                date: "2026-04-13".to_string(),
             }),
         };
 
         assert!(!case.is_valid());
-        assert!(!case.first_mtb_after_mv_consent())
+        assert!(!case.is_first_mtb_after_mv_consent())
+    }
+
+    #[test]
+    fn test_should_sort_care_plans_by_date() {
+        let care_plans = vec![
+            CarePlan {
+                date: "2026-04-13".to_string(),
+            },
+            CarePlan {
+                date: "2026-04-12".to_string(),
+            },
+        ];
+
+        let actual = sorted(care_plans).collect_vec();
+        assert_eq!(
+            actual,
+            vec![
+                CarePlan {
+                    date: "2026-04-12".to_string(),
+                },
+                CarePlan {
+                    date: "2026-04-13".to_string(),
+                },
+            ]
+        );
     }
 }

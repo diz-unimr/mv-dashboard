@@ -43,15 +43,9 @@
                 <h4>Teilnahmeerklärung MVH</h4>
                 {% match case.mv_consent %}
                 {% when Some(mv_consent) %}
-                {% if case.first_mtb_after_mv_consent() %}
                 <p>
                     <time datetime="{{ mv_consent.consent_date }}">{{ mv_consent.consent_date }}</time>
                 </p>
-                {% else %}
-                <p class="warning-part">
-                    <time datetime="{{ mv_consent.consent_date }}">{{ mv_consent.consent_date }}</time>
-                </p>
-                {% endif %}
                 {%if mv_consent.sequencing %}
                 <ul>
                     <li>Sequenzierung zugestimmt</li>
@@ -101,7 +95,7 @@
                 <div>
                     {% match mtb.care_plans %}
                     {% when Some(care_plans) %}
-                    {% if case.first_mtb_after_mv_consent() %}
+                    {% if case.is_first_mtb_after_mv_consent() %}
                     <p>{{ care_plans.len() }} {{ care_plans.len() | pluralize("Therapieplan", "Therapiepläne") }}</p>
                     {% else %}
                     <p class="invalid-part">{{ care_plans.len() }} {{ care_plans.len() | pluralize("Therapieplan", "Therapiepläne") }}</p>
