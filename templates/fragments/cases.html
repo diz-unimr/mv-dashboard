@@ -105,17 +105,18 @@
                 </p>
                 {% if Some(true) == case.deceased_at_first_mtb %}
                 <p class="invalid-part">
-                    <b>✝️ Patient verstorben vor Indikationsstellung</b>
+                    <b>✝️ Patient verstorben vor Indikation</b>
+                </p>
+                {% endif %}
+                {% if mtb.care_plans.is_some() && !case.is_first_mtb_after_mv_consent() %}
+                <p class="invalid-part">
+                    <b>📆 Indikation vor Teilnahmeerklärung</b>
                 </p>
                 {% endif %}
                 <div>
                     {% match mtb.care_plans %}
                     {% when Some(care_plans) %}
-                    {% if case.is_first_mtb_after_mv_consent() %}
                     <p>{{ care_plans.len() }} {{ care_plans.len() | pluralize("Therapieplan", "Therapiepläne") }}</p>
-                    {% else %}
-                    <p class="invalid-part">{{ care_plans.len() }} {{ care_plans.len() | pluralize("Therapieplan", "Therapiepläne") }}</p>
-                    {% endif %}
                     <ul>
                         {% for plan in care_plans %}
                         <li>

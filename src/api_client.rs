@@ -136,7 +136,6 @@ impl Case {
                 let Ok(mv_consent_date) =
                     NaiveDate::parse_from_str(&mv_consent.consent_date, "%Y-%m-%d")
                 else {
-                    error!("{:?}", mv_consent.consent_date);
                     return false;
                 };
                 let Ok(first_care_plan_date) =
