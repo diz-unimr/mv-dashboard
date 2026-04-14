@@ -148,7 +148,7 @@
                     {% if clinical_submission.id.is_empty() %}
                     <p class="warning-part">ohne Kennung</p>
                     {% else %}
-                    <p>mit Kennung <code>{{ clinical_submission.id }}</code></p>
+                    <p><b>{{ clinical_submission.sequencing_type }}</b> mit Kennung <code>{{ clinical_submission.id }}</code></p>
                     {% endif %}
                     {% endwhen %}
                     {% when None %}
@@ -166,7 +166,7 @@
                     {% if genomic_submission.id.is_empty() %}
                     <p class="warning-part">ohne Kennung</p>
                     {% else %}
-                    <p>mit Kennung <code>{{ genomic_submission.id }}</code></p>
+                    <p><b>{{ genomic_submission.sequencing_type }}</b> mit Kennung <code>{{ genomic_submission.id }}</code></p>
                     {% endif %}
                     {% endwhen %}
                     {% when None %}

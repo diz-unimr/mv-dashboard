@@ -45,7 +45,7 @@ impl ApiClient {
         let mut cases = response
             .json::<Vec<Case>>()
             .await
-            .map_err(|_| "Cannot read X-API response".to_string())?;
+            .map_err(|e| format!("Cannot read X-API response: {e}"))?;
 
         cases.sort_unstable_by_key(|item| item.formatted_case_id());
 
@@ -218,6 +218,8 @@ pub(crate) struct Submission {
     #[serde(default = "String::new")]
     pub(crate) id: String,
     pub(crate) date: String,
+    #[serde(default = "String::new")]
+    pub(crate) sequencing_type: String,
 }
 
 #[cfg(test)]
@@ -253,10 +255,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "13.04.2026".to_string(),
+                sequencing_type: String::new(),
             }),
         };
 
@@ -295,10 +299,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
         };
 
@@ -332,10 +338,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
         };
 
@@ -367,10 +375,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
+                sequencing_type: String::new(),
             }),
         };
 
@@ -430,10 +440,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-14".to_string(),
+                sequencing_type: "WES".to_string(),
             }),
             genomic_submission: Some(Submission {
                 id: "GRZ1234567".to_string(),
                 date: "2026-04-14".to_string(),
+                sequencing_type: "WES".to_string(),
             })
         }
     )]

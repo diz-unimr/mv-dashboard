@@ -23,10 +23,12 @@
   },
   "clinicalSubmission": {
     "id": "KDK1234567",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "sequencingType": "WES"
   },
   "genomicSubmission": {
     "id": "GRZ1234567",
-    "date": "2026-04-14"
+    "date": "2026-04-14",
+    "sequencingType": "WES"
   }
 }
