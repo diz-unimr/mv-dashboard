@@ -225,6 +225,8 @@ pub(crate) struct Submission {
 mod tests {
     use crate::api_client::{BroadConsent, CarePlan, Case, Mtb, MvConsent, Submission};
     use itertools::{Itertools, sorted};
+    use rstest::rstest;
+    use std::fs;
 
     #[test]
     fn test_should_find_first_mtb_before_mv_consent() {
@@ -400,5 +402,14 @@ mod tests {
                 },
             ]
         );
+    }
+
+    #[rstest]
+    #[case("testresources/test1.json")]
+    fn test_should_deserialize_json(#[case] file_path: &str) {
+        let content = fs::read_to_string(file_path).unwrap();
+        let actual = serde_json::from_str::<Case>(&content);
+
+        assert!(actual.is_ok());
     }
 }

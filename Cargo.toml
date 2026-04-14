@@ -23,3 +23,6 @@ regex = "1.12"
 include_dir = "0.7"
 chrono = "0.4"
 itertools = "0.14"
+
+[dev-dependencies]
+rstest = "0.26"

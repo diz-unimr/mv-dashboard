@@ -1,0 +1,33 @@
+{
+  "caseId": "H1234-26",
+  "guid": "TESTGUID",
+  "deceased": false,
+  "deceasedAtFirstMtb": false,
+  "onkostarUrl": "https://onkostar.com/index.html?procedureId=KDK1234567",
+  "mvConsent": {
+    "consentDate": "2026-04-14",
+    "sequencing": true,
+    "caseIdentification": true,
+    "reIdentification": true
+  },
+  "broadConsent": {
+    "consentDate": "2026-04-14",
+    "electronicAvailable": true
+  },
+  "mtb": {
+    "registrationDate": "2026-04-14",
+    "carePlans": [
+      {
+        "date": "2026-04-14"
+      }
+    ]
+  },
+  "clinicalSubmission": {
+    "id": "KDK1234567",
+    "date": "2026-04-14"
+  },
+  "genomicSubmission": {
+    "id": "GRZ1234567",
+    "date": "2026-04-14"
+  }
+}
