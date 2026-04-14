@@ -15,7 +15,7 @@ impl ApiClient {
             base_url: Self::clean_base_url(base_url),
             http_client: reqwest::ClientBuilder::new()
                 .user_agent(concat!("mv-dashboard", env!("CARGO_PKG_VERSION")))
-                .timeout(std::time::Duration::from_secs(15))
+                .timeout(std::time::Duration::from_secs(30))
                 .build()
                 .unwrap_or_default(),
         }
