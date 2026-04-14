@@ -42,7 +42,7 @@
         <summary>
             {% if case.is_valid() %} ✅ {% else %} 😱 {% endif %}
             <span>{{ case.formatted_case_id() }}</span>
-            {% if Some(true) == case.deceased %}
+            {% if case.deceased %}
             <span class="deceased">✝️ Patient verstorben</span>
             {% endif %}
             {% if let Some(url) = case.onkostar_url() %}
@@ -103,7 +103,7 @@
                 <p>
                     Anmeldung am: <time datetime="{{ mtb.registration_date }}">{{ mtb.registration_date }}</time>
                 </p>
-                {% if Some(true) == case.deceased_at_first_mtb %}
+                {% if case.deceased_at_first_mtb %}
                 <p class="invalid-part">
                     <b>✝️ Patient verstorben vor Indikation</b>
                 </p>

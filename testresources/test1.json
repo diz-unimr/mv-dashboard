@@ -3,7 +3,6 @@
   "guid": "TESTGUID",
   "deceased": false,
   "deceasedAtFirstMtb": false,
-  "onkostarUrl": "https://onkostar.com/index.html?procedureId=KDK1234567",
   "mvConsent": {
     "consentDate": "2026-04-14",
     "sequencing": true,

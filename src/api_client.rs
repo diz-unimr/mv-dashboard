@@ -57,13 +57,15 @@ pub(crate) struct DashboardResponse {
     pub(crate) cases: Vec<Case>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Case {
     pub(crate) case_id: String,
     pub(crate) guid: Option<String>,
-    pub(crate) deceased: Option<bool>,
-    pub(crate) deceased_at_first_mtb: Option<bool>,
+    #[serde(default)]
+    pub(crate) deceased: bool,
+    #[serde(default)]
+    pub(crate) deceased_at_first_mtb: bool,
     pub(crate) mtb: Option<Mtb>,
     pub(crate) mv_consent: Option<MvConsent>,
     pub(crate) broad_consent: Option<BroadConsent>,
@@ -102,10 +104,7 @@ impl Case {
                 Some(mv_consent) => mv_consent.is_valid(),
                 None => false,
             }
-            && match &self.deceased_at_first_mtb {
-                Some(deceased_at_first_mtb) => !*deceased_at_first_mtb,
-                None => true,
-            }
+            && !self.deceased_at_first_mtb
     }
 
     pub fn has_valid_case_number(&self) -> bool {
@@ -150,7 +149,7 @@ impl Case {
     }
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Mtb {
     pub(crate) registration_date: String,
@@ -185,7 +184,7 @@ trait Consent {
     fn is_valid(&self) -> bool;
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MvConsent {
     pub(crate) consent_date: String,
@@ -200,7 +199,7 @@ impl Consent for MvConsent {
     }
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct BroadConsent {
     pub(crate) consent_date: String,
@@ -213,7 +212,7 @@ impl Consent for BroadConsent {
     }
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Submission {
     #[serde(default = "String::new")]
@@ -233,8 +232,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
-            deceased: None,
-            deceased_at_first_mtb: None,
+            deceased: false,
+            deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -270,8 +269,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
-            deceased: None,
-            deceased_at_first_mtb: None,
+            deceased: false,
+            deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -312,8 +311,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
-            deceased: None,
-            deceased_at_first_mtb: None,
+            deceased: false,
+            deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -349,8 +348,8 @@ mod tests {
         let case = Case {
             case_id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
-            deceased: None,
-            deceased_at_first_mtb: None,
+            deceased: false,
+            deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-01".to_string(),
                 sequencing: true,
@@ -405,11 +404,57 @@ mod tests {
     }
 
     #[rstest]
-    #[case("testresources/test1.json")]
-    fn test_should_deserialize_json(#[case] file_path: &str) {
+    #[case(
+        "testresources/test1.json",
+        Case {
+            case_id: "H1234-26".to_string(),
+            guid: Some("TESTGUID".to_string()),
+            deceased: false,
+            deceased_at_first_mtb: false,
+            mtb: Some(Mtb {
+                registration_date: "2026-04-14".to_string(),
+                care_plans: Some(vec![CarePlan {
+                    date: "2026-04-14".to_string(),
+                }]),
+            }),
+            mv_consent: Some(MvConsent {
+                consent_date: "2026-04-14".to_string(),
+                sequencing: true,
+                case_identification: true,
+                re_identification: true,
+            }),
+            broad_consent: Some(BroadConsent {
+                consent_date: "2026-04-14".to_string(),
+                electronic_available: true,
+            }),
+            clinical_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-14".to_string(),
+            }),
+            genomic_submission: Some(Submission {
+                id: "GRZ1234567".to_string(),
+                date: "2026-04-14".to_string(),
+            })
+        }
+    )]
+    #[case(
+        "testresources/test2.json",
+        Case {
+            case_id: "H1234-26".to_string(),
+            guid: Some("TESTGUID".to_string()),
+            deceased: false,
+            deceased_at_first_mtb: false,
+            mtb: None,
+            mv_consent: None,
+            broad_consent: None,
+            clinical_submission: None,
+            genomic_submission: None,
+        }
+    )]
+    fn test_should_deserialize_json(#[case] file_path: &str, #[case] expected: Case) {
         let content = fs::read_to_string(file_path).unwrap();
         let actual = serde_json::from_str::<Case>(&content);
 
-        assert!(actual.is_ok());
+        assert_eq!(actual.ok(), Some(expected));
     }
 }
