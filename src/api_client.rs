@@ -2,7 +2,6 @@ use crate::CONFIG;
 use crate::auth::User;
 use chrono::NaiveDate;
 use itertools::{Itertools, sorted};
-use log::error;
 use regex::Regex;
 
 pub(crate) struct ApiClient {
@@ -15,7 +14,7 @@ impl ApiClient {
         ApiClient {
             base_url: Self::clean_base_url(base_url),
             http_client: reqwest::ClientBuilder::new()
-                .user_agent("mv-dashboard/0.1.0")
+                .user_agent(concat!("mv-dashboard", env!("CARGO_PKG_VERSION")))
                 .timeout(std::time::Duration::from_secs(15))
                 .build()
                 .unwrap_or_default(),
