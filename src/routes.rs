@@ -1,6 +1,5 @@
 use crate::api_client::Case;
 use crate::auth::{Backend, handle_login, handle_logout};
-use crate::config::Config;
 use crate::{API_CLIENT, ASSETS};
 use askama::Template;
 use axum::body::Body;
@@ -17,7 +16,7 @@ use std::path;
 use tower_sessions::cookie::time::Duration;
 use tower_sessions::{Expiry, MemoryStore};
 
-pub(crate) fn routes(config: &Config) -> axum::Router {
+pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> axum::Router {
     let session_store = MemoryStore::default();
     let session_layer = SessionManagerLayer::new(session_store)
         .with_name("mv-dashboard-session")
@@ -26,16 +25,14 @@ pub(crate) fn routes(config: &Config) -> axum::Router {
         .with_expiry(Expiry::OnInactivity(Duration::minutes(30)))
         .with_always_save(true);
 
-    let session_layer = if let Some(cookie_domain) = &config.cookie_domain {
+    let session_layer = if let Some(cookie_domain) = cookie_domain {
         log::info!("Using cookie domain: {}", cookie_domain);
         session_layer.with_domain(cookie_domain.clone())
     } else {
         session_layer
     };
 
-    let backend = Backend::default();
-
-    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
+    let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
 
     let protected_routes = axum::Router::new()
         .route("/mv-dashboard", get(handle_index_request))
@@ -195,15 +192,17 @@ async fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::Config;
+    use crate::auth::Backend;
     use crate::routes::routes;
     use axum::body::Body;
     use axum::http::{Method, Request, StatusCode};
+    use httpmock::Method::GET;
+    use httpmock::MockServer;
     use tower::ServiceExt;
 
     #[tokio::test]
     async fn should_redirect_from_root_to_mv_dashboard() {
-        let response = routes(&Config::default())
+        let response = routes(Backend::new("http://localhost:8080/onkostar"), None)
             .oneshot(
                 Request::builder()
                     .method(Method::GET)
@@ -224,7 +223,7 @@ mod tests {
 
     #[tokio::test]
     async fn should_redirect_to_login_if_not_logged_in() {
-        let response = routes(&Config::default())
+        let response = routes(Backend::new("http://localhost:8080/onkostar"), None)
             .oneshot(
                 Request::builder()
                     .method(Method::GET)
@@ -244,5 +243,69 @@ mod tests {
             }
             Err(err) => panic!("Error: {:?}", err),
         }
+    }
+
+    #[tokio::test]
+    async fn should_send_cookie_on_login() {
+        let mock_server = MockServer::start();
+        let mock = mock_server.mock(|when, then| {
+            when.method(GET).path("/x-api/me");
+            then.status(200).body("ptsr00");
+        });
+
+        let response = routes(Backend::new(&mock_server.base_url()), None)
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/mv-dashboard/login?next=%2Fmv-dashboard")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .body(Body::from("username=ptsr00&password=test"))
+                    .expect("request built"),
+            )
+            .await;
+
+        match response {
+            Ok(response) => {
+                assert_eq!(response.status(), StatusCode::SEE_OTHER);
+                assert_eq!(response.headers().get("Location").unwrap(), "/mv-dashboard");
+                assert!(response.headers().get("Set-Cookie").is_some());
+            }
+            Err(err) => panic!("Error: {:?}", err),
+        }
+
+        mock.assert();
+    }
+
+    #[tokio::test]
+    async fn should_login_again() {
+        let mock_server = MockServer::start();
+        let mock = mock_server.mock(|when, then| {
+            when.method(GET).path("/x-api/me");
+            then.status(401);
+        });
+
+        let response = routes(Backend::new(&mock_server.base_url()), None)
+            .oneshot(
+                Request::builder()
+                    .method(Method::POST)
+                    .uri("/mv-dashboard/login?next=%2Fmv-dashboard")
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .body(Body::from("username=ptsr00&password=test"))
+                    .expect("request built"),
+            )
+            .await;
+
+        match response {
+            Ok(response) => {
+                assert_eq!(response.status(), StatusCode::SEE_OTHER);
+                assert_eq!(
+                    response.headers().get("Location").unwrap(),
+                    "/mv-dashboard/login"
+                );
+            }
+            Err(err) => panic!("Error: {:?}", err),
+        }
+
+        mock.assert();
     }
 }

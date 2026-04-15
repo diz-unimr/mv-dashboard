@@ -1,3 +1,4 @@
+use crate::auth::Backend;
 use crate::routes::routes;
 use clap::Parser;
 use include_dir::{Dir, include_dir};
@@ -26,7 +27,15 @@ async fn main() -> Result<(), String> {
     match tokio::net::TcpListener::bind(&conf.listen).await {
         Ok(listener) => {
             log::info!("Starting application listening on '{}'", &conf.listen);
-            if let Err(err) = axum::serve(listener, routes(&CONFIG)).await {
+            if let Err(err) = axum::serve(
+                listener,
+                routes(
+                    Backend::new(&CONFIG.onkostar_url),
+                    CONFIG.cookie_domain.clone(),
+                ),
+            )
+            .await
+            {
                 return Err(err.to_string());
             }
         }

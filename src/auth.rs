@@ -1,4 +1,3 @@
-use crate::CONFIG;
 use axum::Form;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Redirect};
@@ -59,10 +58,11 @@ impl User {
 pub(crate) struct Backend {
     users: Arc<RwLock<HashMap<String, User>>>,
     http_client: reqwest::Client,
+    onkostar_url: String,
 }
 
-impl Default for Backend {
-    fn default() -> Self {
+impl Backend {
+    pub fn new(onkostar_url: &str) -> Self {
         let http_client = reqwest::ClientBuilder::new()
             .user_agent("mv-dashboard/0.1.0")
             .build()
@@ -71,6 +71,7 @@ impl Default for Backend {
         Self {
             users: Arc::new(RwLock::new(HashMap::new())),
             http_client,
+            onkostar_url: onkostar_url.to_string(),
         }
     }
 }
@@ -86,7 +87,7 @@ impl AuthnBackend for Backend {
     ) -> Result<Option<Self::User>, Self::Error> {
         match self
             .http_client
-            .get(format!("{}/x-api/me", CONFIG.onkostar_url))
+            .get(format!("{}/x-api/me", self.onkostar_url))
             .basic_auth(&credentials.username, Some(&credentials.password))
             .send()
             .await

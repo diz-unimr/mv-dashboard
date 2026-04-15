@@ -27,3 +27,4 @@ itertools = "0.14"
 [dev-dependencies]
 rstest = "0.26"
 tower = "0.5"
+httpmock = "0.8"
