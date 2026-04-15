@@ -221,4 +221,28 @@ mod tests {
             Err(err) => panic!("Error: {:?}", err),
         }
     }
+
+    #[tokio::test]
+    async fn should_redirect_to_login_if_not_logged_in() {
+        let response = routes(&Config::default())
+            .oneshot(
+                Request::builder()
+                    .method(Method::GET)
+                    .uri("/mv-dashboard")
+                    .body(Body::empty())
+                    .expect("request built"),
+            )
+            .await;
+
+        match response {
+            Ok(response) => {
+                assert_eq!(response.status(), StatusCode::TEMPORARY_REDIRECT);
+                assert_eq!(
+                    response.headers().get("Location").unwrap(),
+                    "/mv-dashboard/login?next=%2Fmv-dashboard"
+                );
+            }
+            Err(err) => panic!("Error: {:?}", err),
+        }
+    }
 }
