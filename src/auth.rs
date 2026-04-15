@@ -153,3 +153,65 @@ pub(crate) async fn handle_logout(mut auth_session: AuthSession<Backend>) -> imp
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::auth::{Backend, Credentials};
+    use axum_login::AuthnBackend;
+    use httpmock::Method::GET;
+    use httpmock::MockServer;
+
+    #[tokio::test]
+    async fn test_should_authenticate_user() {
+        let mock_server = MockServer::start();
+        let mock = mock_server.mock(|when, then| {
+            when.method(GET).path("/x-api/me");
+            then.status(200).body("ptsr00");
+        });
+
+        let credentials = Credentials {
+            username: "ptsr00".to_string(),
+            password: "test".to_string(),
+        };
+
+        let backend = Backend::new(&mock_server.base_url());
+
+        let result = backend.authenticate(credentials).await;
+
+        assert!(result.is_ok());
+        match result.unwrap() {
+            Some(user) => {
+                assert_eq!(user.username(), "ptsr00");
+                assert_eq!(user.password(), "test");
+            }
+            None => panic!("User not authenticated"),
+        }
+
+        mock.assert();
+    }
+
+    #[tokio::test]
+    async fn test_should_not_authenticate_user() {
+        let mock_server = MockServer::start();
+        let mock = mock_server.mock(|when, then| {
+            when.method(GET).path("/x-api/me");
+            then.status(401);
+        });
+
+        let credentials = Credentials {
+            username: "ptsr00".to_string(),
+            password: "test".to_string(),
+        };
+
+        let backend = Backend::new(&mock_server.base_url());
+
+        let result = backend.authenticate(credentials).await;
+
+        assert!(result.is_ok());
+        if result.unwrap().is_some() {
+            panic!("No user expected!")
+        }
+
+        mock.assert();
+    }
+}
