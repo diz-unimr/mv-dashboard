@@ -96,6 +96,22 @@ impl Case {
         format!("H/20{}/{}", year, number)
     }
 
+    pub fn has_valid_submissions(&self) -> bool {
+        let clinical_submission = self
+            .clinical_submission
+            .as_ref()
+            .map(|submission| &submission.sequencing_type);
+
+        let genomic_submission = self
+            .genomic_submission
+            .as_ref()
+            .map(|submission| &submission.sequencing_type);
+
+        clinical_submission == genomic_submission
+            && clinical_submission != Some(&SequencingType::Invalid)
+            && genomic_submission != Some(&SequencingType::Invalid)
+    }
+
     pub fn is_valid(&self) -> bool {
         self.is_first_mtb_after_mv_consent()
             && self.broad_consent.is_some()
@@ -105,14 +121,7 @@ impl Case {
                 None => false,
             }
             && !self.deceased_at_first_mtb
-            && match &self.clinical_submission {
-                Some(submission) => submission.sequencing_type != SequencingType::Invalid,
-                None => false,
-            }
-            && match &self.genomic_submission {
-                Some(submission) => submission.sequencing_type != SequencingType::Invalid,
-                None => false,
-            }
+            && self.has_valid_submissions()
     }
 
     pub fn has_valid_case_number(&self) -> bool {
@@ -306,12 +315,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
+                sequencing_type: SequencingType::Wes,
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
-                date: "13.04.2026".to_string(),
-                sequencing_type: SequencingType::default(),
+                date: "2026-04-13".to_string(),
+                sequencing_type: SequencingType::Wes,
             }),
         };
 
@@ -350,12 +359,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
+                sequencing_type: SequencingType::Wes,
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
+                sequencing_type: SequencingType::Wes,
             }),
         };
 
@@ -491,12 +500,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-14".to_string(),
-                sequencing_type: SequencingType::default(),
+                sequencing_type: SequencingType::Wes,
             }),
             genomic_submission: Some(Submission {
                 id: "GRZ1234567".to_string(),
                 date: "2026-04-14".to_string(),
-                sequencing_type: SequencingType::default(),
+                sequencing_type: SequencingType::Wes,
             })
         }
     )]
@@ -519,5 +528,43 @@ mod tests {
         let actual = serde_json::from_str::<Case>(&content);
 
         assert_eq!(actual.ok(), Some(expected));
+    }
+
+    #[test]
+    fn test_should_show_invalid_different_submission_types() {
+        let case = Case {
+            case_id: "H1234-26".to_string(),
+            guid: Some("TESTGUID".to_string()),
+            deceased: false,
+            deceased_at_first_mtb: false,
+            mv_consent: Some(MvConsent {
+                consent_date: "2026-04-01".to_string(),
+                sequencing: true,
+                case_identification: true,
+                re_identification: true,
+            }),
+            broad_consent: Some(BroadConsent {
+                consent_date: "2026-04-01".to_string(),
+                electronic_available: true,
+            }),
+            mtb: Some(Mtb {
+                registration_date: "2026-04-16".to_string(),
+                care_plans: Some(vec![CarePlan {
+                    date: "2026-04-16".to_string(),
+                }]),
+            }),
+            clinical_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-16".to_string(),
+                sequencing_type: SequencingType::Panel,
+            }),
+            genomic_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-16".to_string(),
+                sequencing_type: SequencingType::Wes,
+            }),
+        };
+
+        assert!(!case.is_valid());
     }
 }
