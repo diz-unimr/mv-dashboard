@@ -3,6 +3,8 @@ use crate::auth::User;
 use chrono::NaiveDate;
 use itertools::{Itertools, sorted};
 use regex::Regex;
+use serde::{Deserialize, Deserializer};
+use std::fmt::Display;
 
 pub(crate) struct ApiClient {
     base_url: String,
@@ -98,13 +100,19 @@ impl Case {
         self.is_first_mtb_after_mv_consent()
             && self.broad_consent.is_some()
             && self.mtb.is_some()
-            && self.clinical_submission.is_some()
-            && self.genomic_submission.is_some()
             && match &self.mv_consent {
                 Some(mv_consent) => mv_consent.is_valid(),
                 None => false,
             }
             && !self.deceased_at_first_mtb
+            && match &self.clinical_submission {
+                Some(submission) => submission.sequencing_type != SequencingType::Invalid,
+                None => false,
+            }
+            && match &self.genomic_submission {
+                Some(submission) => submission.sequencing_type != SequencingType::Invalid,
+                None => false,
+            }
     }
 
     pub fn has_valid_case_number(&self) -> bool {
@@ -218,13 +226,56 @@ pub(crate) struct Submission {
     #[serde(default = "String::new")]
     pub(crate) id: String,
     pub(crate) date: String,
-    #[serde(default = "String::new")]
-    pub(crate) sequencing_type: String,
+    #[serde(default = "SequencingType::default")]
+    pub(crate) sequencing_type: SequencingType,
+}
+
+#[derive(Default, Debug, Eq, PartialEq)]
+pub(crate) enum SequencingType {
+    None,
+    Wgs,
+    Wes,
+    Panel,
+    WesLr,
+    #[default]
+    Invalid,
+}
+
+impl Display for SequencingType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SequencingType::None => write!(f, "Keine"),
+            SequencingType::Wgs => write!(f, "WGS"),
+            SequencingType::Wes => write!(f, "WES"),
+            SequencingType::Panel => write!(f, "Panel"),
+            SequencingType::WesLr => write!(f, "WGS/LR"),
+            SequencingType::Invalid => write!(f, "Ungültig"),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for SequencingType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        match s.as_str() {
+            "Keine" => Ok(SequencingType::None),
+            "WGS" => Ok(SequencingType::Wgs),
+            "WES" => Ok(SequencingType::Wes),
+            "Panel" => Ok(SequencingType::Panel),
+            "WGS/LR" => Ok(SequencingType::WesLr),
+            _ => Ok(SequencingType::Invalid),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::api_client::{BroadConsent, CarePlan, Case, Mtb, MvConsent, Submission};
+    use crate::api_client::{
+        BroadConsent, CarePlan, Case, Mtb, MvConsent, SequencingType, Submission,
+    };
     use itertools::{Itertools, sorted};
     use rstest::rstest;
     use std::fs;
@@ -255,12 +306,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "13.04.2026".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
         };
 
@@ -299,12 +350,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
         };
 
@@ -338,12 +389,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
         };
 
@@ -375,12 +426,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
             genomic_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-13".to_string(),
-                sequencing_type: String::new(),
+                sequencing_type: SequencingType::default(),
             }),
         };
 
@@ -440,12 +491,12 @@ mod tests {
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
                 date: "2026-04-14".to_string(),
-                sequencing_type: "WES".to_string(),
+                sequencing_type: SequencingType::default(),
             }),
             genomic_submission: Some(Submission {
                 id: "GRZ1234567".to_string(),
                 date: "2026-04-14".to_string(),
-                sequencing_type: "WES".to_string(),
+                sequencing_type: SequencingType::default(),
             })
         }
     )]
