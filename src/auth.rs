@@ -101,9 +101,8 @@ impl AuthnBackend for Backend {
             Err(_) => return Ok(None),
         };
 
-        let hash = match hash(credentials.password.clone(), 10) {
-            Ok(hash) => hash,
-            Err(_) => return Ok(None),
+        let Ok(hash) = hash(credentials.password.clone(), 10) else {
+            return Ok(None);
         };
 
         let user = User {
@@ -166,7 +165,10 @@ mod tests {
     async fn test_should_authenticate_user() {
         let mock_server = MockServer::start();
         let mock = mock_server.mock(|when, then| {
-            when.method(GET).path("/x-api/me");
+            when.method(GET)
+                .path("/x-api/me")
+                // Authorization: Basic {ptsr00:test}
+                .header("Authorization", "Basic cHRzcjAwOnRlc3Q=");
             then.status(200).body("ptsr00");
         });
 
@@ -209,9 +211,7 @@ mod tests {
         let result = backend.authenticate(credentials).await;
 
         assert!(result.is_ok());
-        if result.unwrap().is_some() {
-            panic!("No user expected!")
-        }
+        assert!(result.unwrap().is_none(), "No user expected!");
 
         mock.assert();
     }
