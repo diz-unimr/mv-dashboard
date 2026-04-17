@@ -49,7 +49,7 @@ impl ApiClient {
             .await
             .map_err(|e| format!("Cannot read X-API response: {e}"))?;
 
-        cases.sort_unstable_by_key(|item| item.formatted_case_id());
+        cases.sort_unstable_by_key(Case::formatted_case_id);
 
         Ok(DashboardResponse { cases })
     }
@@ -80,9 +80,8 @@ impl Case {
     pub fn formatted_case_id(&self) -> String {
         let re = Regex::new(r"^H(?<number>\d+)-(?<year>\d{2})$").expect("Invalid regex pattern");
 
-        let caps = match re.captures(&self.case_id) {
-            Some(caps) => caps,
-            None => return self.case_id.clone(),
+        let Some(caps) = re.captures(&self.case_id) else {
+            return self.case_id.clone();
         };
 
         let number = match caps.name("number") {
@@ -94,7 +93,7 @@ impl Case {
             None => return self.case_id.clone(),
         };
 
-        format!("H/20{}/{}", year, number)
+        format!("H/20{year}/{number}")
     }
 
     pub fn has_valid_submissions(&self) -> bool {
@@ -126,7 +125,7 @@ impl Case {
     }
 
     pub fn has_valid_case_number(&self) -> bool {
-        !self.case_id.starts_with("!")
+        !self.case_id.starts_with('!')
     }
 
     pub fn onkostar_url(&self) -> Option<String> {
@@ -135,7 +134,7 @@ impl Case {
                 "{}/index.html?procedureId={}",
                 &CONFIG.onkostar_url, guid
             ));
-        };
+        }
 
         None
     }
@@ -327,7 +326,7 @@ mod tests {
         };
 
         assert!(case.is_valid());
-        assert!(case.is_first_mtb_after_mv_consent())
+        assert!(case.is_first_mtb_after_mv_consent());
     }
 
     #[test]
@@ -371,7 +370,7 @@ mod tests {
         };
 
         assert!(case.is_valid());
-        assert!(case.is_first_mtb_after_mv_consent())
+        assert!(case.is_first_mtb_after_mv_consent());
     }
 
     #[test]
@@ -410,7 +409,7 @@ mod tests {
         };
 
         assert!(!case.is_valid());
-        assert!(!case.is_first_mtb_after_mv_consent())
+        assert!(!case.is_first_mtb_after_mv_consent());
     }
 
     #[test]
@@ -447,7 +446,7 @@ mod tests {
         };
 
         assert!(!case.is_valid());
-        assert!(!case.is_first_mtb_after_mv_consent())
+        assert!(!case.is_first_mtb_after_mv_consent());
     }
 
     #[test]

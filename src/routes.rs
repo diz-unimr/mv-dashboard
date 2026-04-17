@@ -17,27 +17,6 @@ use tower_sessions::cookie::time::Duration;
 use tower_sessions::{Expiry, MemoryStore};
 
 pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> axum::Router {
-    let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_name("mv-dashboard-session")
-        .with_path("/mv-dashboard")
-        .with_secure(false)
-        .with_expiry(Expiry::OnInactivity(Duration::minutes(30)))
-        .with_always_save(true);
-
-    let session_layer = if let Some(cookie_domain) = cookie_domain {
-        log::info!("Using cookie domain: {}", cookie_domain);
-        session_layer.with_domain(cookie_domain.clone())
-    } else {
-        session_layer
-    };
-
-    let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
-
-    let protected_routes = axum::Router::new()
-        .route("/mv-dashboard", get(handle_index_request))
-        .layer(login_required!(Backend, login_url = "/mv-dashboard/login"));
-
     async fn check_ajax_auth(
         auth: AuthSession<Backend>,
         req: Request<Body>,
@@ -53,6 +32,27 @@ pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> ax
             .unwrap_or_default()
             .into_response()
     }
+
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_name("mv-dashboard-session")
+        .with_path("/mv-dashboard")
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(Duration::minutes(30)))
+        .with_always_save(true);
+
+    let session_layer = if let Some(cookie_domain) = cookie_domain {
+        log::info!("Using cookie domain: {cookie_domain}");
+        session_layer.with_domain(cookie_domain.clone())
+    } else {
+        session_layer
+    };
+
+    let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
+
+    let protected_routes = axum::Router::new()
+        .route("/mv-dashboard", get(handle_index_request))
+        .layer(login_required!(Backend, login_url = "/mv-dashboard/login"));
 
     let ajax_routes = axum::Router::new()
         .route("/mv-dashboard/cases", get(handle_cases_request))
@@ -74,7 +74,7 @@ pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> ax
         .route("/mv-dashboard/logout", get(handle_logout))
         .route(
             "/mv-dashboard/assets/{*path}",
-            get(|path| async { serve_asset(path).await }),
+            get(|path| async { serve_asset(path) }),
         )
         .merge(protected_routes)
         .merge(ajax_routes)
@@ -157,7 +157,7 @@ async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 }
 
 #[allow(clippy::expect_used)]
-async fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
+fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
     fn get_mimetype(path: &path::Path) -> Option<&str> {
         if let Some(extension) = path.extension() {
             return match extension.to_str() {
@@ -229,7 +229,7 @@ mod tests {
                     "/mv-dashboard"
                 );
             }
-            Err(err) => panic!("Error: {:?}", err),
+            Err(err) => panic!("Error: {err:?}"),
         }
     }
 
@@ -256,7 +256,7 @@ mod tests {
                     "/mv-dashboard/login?next=%2Fmv-dashboard"
                 );
             }
-            Err(err) => panic!("Error: {:?}", err),
+            Err(err) => panic!("Error: {err:?}"),
         }
     }
 
@@ -291,7 +291,7 @@ mod tests {
                 );
                 assert!(response.headers().get("Set-Cookie").is_some());
             }
-            Err(err) => panic!("Error: {:?}", err),
+            Err(err) => panic!("Error: {err:?}"),
         }
 
         mock.assert();
@@ -327,7 +327,7 @@ mod tests {
                     "/mv-dashboard/login"
                 );
             }
-            Err(err) => panic!("Error: {:?}", err),
+            Err(err) => panic!("Error: {err:?}"),
         }
 
         mock.assert();
