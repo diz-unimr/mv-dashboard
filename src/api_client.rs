@@ -76,6 +76,7 @@ pub(crate) struct Case {
 }
 
 impl Case {
+    #[allow(clippy::expect_used)]
     pub fn formatted_case_id(&self) -> String {
         let re = Regex::new(r"^H(?<number>\d+)-(?<year>\d{2})$").expect("Invalid regex pattern");
 
@@ -281,6 +282,7 @@ impl<'de> Deserialize<'de> for SequencingType {
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use crate::api_client::{
         BroadConsent, CarePlan, Case, Mtb, MvConsent, SequencingType, Submission,
@@ -524,7 +526,7 @@ mod tests {
         }
     )]
     fn test_should_deserialize_json(#[case] file_path: &str, #[case] expected: Case) {
-        let content = fs::read_to_string(file_path).unwrap();
+        let content = fs::read_to_string(file_path).expect("Could not read test file");
         let actual = serde_json::from_str::<Case>(&content);
 
         assert_eq!(actual.ok(), Some(expected));

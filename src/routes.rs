@@ -118,20 +118,23 @@ impl CasesTemplate {
 #[template(path = "login.html")]
 struct LoginTemplate {}
 
+#[allow(clippy::expect_used)]
 async fn show_login() -> Result<impl IntoResponse, String> {
     let template = LoginTemplate {};
-    Ok(Html(template.render().unwrap()))
+    Ok(Html(template.render().expect("Could not render template")))
 }
 
+#[allow(clippy::expect_used)]
 async fn handle_index_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
     let template = IndexTemplate {
         username: user.username().to_string(),
     };
-    Ok(Html(template.render().unwrap()))
+    Ok(Html(template.render().expect("Could not render template")))
 }
 
+#[allow(clippy::expect_used)]
 async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
@@ -150,9 +153,10 @@ async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
     let template = CasesTemplate {
         cases: response.cases,
     };
-    Ok(Html(template.render().unwrap()).into_response())
+    Ok(Html(template.render().expect("Could not render template")).into_response())
 }
 
+#[allow(clippy::expect_used)]
 async fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
     fn get_mimetype(path: &path::Path) -> Option<&str> {
         if let Some(extension) = path.extension() {
@@ -187,10 +191,12 @@ async fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
             .status(StatusCode::BAD_REQUEST)
             .body(Body::from("".as_bytes())),
     }
-    .unwrap()
+    .expect("Could not serve asset")
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
+#[allow(clippy::panic)]
 mod tests {
     use crate::auth::Backend;
     use crate::routes::routes;
@@ -215,7 +221,13 @@ mod tests {
         match response {
             Ok(response) => {
                 assert_eq!(response.status(), StatusCode::FOUND);
-                assert_eq!(response.headers().get("Location").unwrap(), "/mv-dashboard");
+                assert_eq!(
+                    response
+                        .headers()
+                        .get("Location")
+                        .expect("Could not get Location header"),
+                    "/mv-dashboard"
+                );
             }
             Err(err) => panic!("Error: {:?}", err),
         }
@@ -237,7 +249,10 @@ mod tests {
             Ok(response) => {
                 assert_eq!(response.status(), StatusCode::TEMPORARY_REDIRECT);
                 assert_eq!(
-                    response.headers().get("Location").unwrap(),
+                    response
+                        .headers()
+                        .get("Location")
+                        .expect("Could not get Location header"),
                     "/mv-dashboard/login?next=%2Fmv-dashboard"
                 );
             }
@@ -267,7 +282,13 @@ mod tests {
         match response {
             Ok(response) => {
                 assert_eq!(response.status(), StatusCode::SEE_OTHER);
-                assert_eq!(response.headers().get("Location").unwrap(), "/mv-dashboard");
+                assert_eq!(
+                    response
+                        .headers()
+                        .get("Location")
+                        .expect("Could not get Location header"),
+                    "/mv-dashboard"
+                );
                 assert!(response.headers().get("Set-Cookie").is_some());
             }
             Err(err) => panic!("Error: {:?}", err),
@@ -299,7 +320,10 @@ mod tests {
             Ok(response) => {
                 assert_eq!(response.status(), StatusCode::SEE_OTHER);
                 assert_eq!(
-                    response.headers().get("Location").unwrap(),
+                    response
+                        .headers()
+                        .get("Location")
+                        .expect("Could not get Location header"),
                     "/mv-dashboard/login"
                 );
             }

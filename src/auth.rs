@@ -155,6 +155,7 @@ pub(crate) async fn handle_logout(mut auth_session: AuthSession<Backend>) -> imp
 }
 
 #[cfg(test)]
+#[allow(clippy::panic)]
 mod tests {
     use crate::auth::{Backend, Credentials};
     use axum_login::AuthnBackend;
