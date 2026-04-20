@@ -18,7 +18,8 @@ COPY Cargo.toml ./
 COPY Cargo.lock ./
 COPY src ./src
 COPY templates ./templates
-COPY --from=web-stage resources ./resources
+COPY --from=web-stage /build/resources/assets/main.css ./resources/assets/main.css
+COPY --from=web-stage /build/resources/assets/main.js ./resources/assets/main.js
 
 RUN cargo build --release
 
