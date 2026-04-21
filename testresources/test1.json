@@ -30,5 +30,6 @@
     "id": "GRZ1234567",
     "date": "2026-04-14",
     "sequencingType": "WES"
-  }
+  },
+  "nextFollowUpDue": "2026-07-14"
 }

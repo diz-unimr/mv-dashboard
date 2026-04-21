@@ -1,10 +1,11 @@
 use crate::CONFIG;
 use crate::auth::User;
-use chrono::NaiveDate;
+use chrono::{Duration, Local, NaiveDate};
 use itertools::{Itertools, sorted};
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
 use std::fmt::Display;
+use std::ops::{Add, Sub};
 
 pub(crate) struct ApiClient {
     base_url: String,
@@ -73,6 +74,7 @@ pub(crate) struct Case {
     pub(crate) broad_consent: Option<BroadConsent>,
     pub(crate) clinical_submission: Option<Submission>,
     pub(crate) genomic_submission: Option<Submission>,
+    pub(crate) next_follow_up_due: Option<String>,
 }
 
 impl Case {
@@ -161,6 +163,29 @@ impl Case {
                 return mv_consent_date <= first_care_plan_date;
             }
             return false;
+        }
+        false
+    }
+
+    pub fn is_past_follow_up(&self) -> bool {
+        if let Some(next_follow_up_due) = &self.next_follow_up_due {
+            let Ok(date) = NaiveDate::parse_from_str(next_follow_up_due, "%Y-%m-%d") else {
+                return false;
+            };
+
+            return date < Local::now().date_naive();
+        }
+        false
+    }
+
+    pub fn is_due_follow_up(&self) -> bool {
+        if let Some(next_follow_up_due) = &self.next_follow_up_due {
+            let Ok(date) = NaiveDate::parse_from_str(next_follow_up_due, "%Y-%m-%d") else {
+                return false;
+            };
+
+            return date.add(Duration::weeks(1)) > Local::now().date_naive()
+                && date.sub(Duration::weeks(1)) < Local::now().date_naive();
         }
         false
     }
@@ -323,6 +348,7 @@ mod tests {
                 date: "2026-04-13".to_string(),
                 sequencing_type: SequencingType::Wes,
             }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
         };
 
         assert!(case.is_valid());
@@ -367,6 +393,7 @@ mod tests {
                 date: "2026-04-13".to_string(),
                 sequencing_type: SequencingType::Wes,
             }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
         };
 
         assert!(case.is_valid());
@@ -406,6 +433,7 @@ mod tests {
                 date: "2026-04-13".to_string(),
                 sequencing_type: SequencingType::default(),
             }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
         };
 
         assert!(!case.is_valid());
@@ -443,6 +471,7 @@ mod tests {
                 date: "2026-04-13".to_string(),
                 sequencing_type: SequencingType::default(),
             }),
+            next_follow_up_due: Some("2026-06-30".to_string()),
         };
 
         assert!(!case.is_valid());
@@ -507,7 +536,8 @@ mod tests {
                 id: "GRZ1234567".to_string(),
                 date: "2026-04-14".to_string(),
                 sequencing_type: SequencingType::Wes,
-            })
+            }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
         }
     )]
     #[case(
@@ -522,6 +552,7 @@ mod tests {
             broad_consent: None,
             clinical_submission: None,
             genomic_submission: None,
+            next_follow_up_due: None,
         }
     )]
     fn test_should_deserialize_json(#[case] file_path: &str, #[case] expected: Case) {
@@ -564,6 +595,7 @@ mod tests {
                 date: "2026-04-16".to_string(),
                 sequencing_type: SequencingType::Wes,
             }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
         };
 
         assert!(!case.is_valid());

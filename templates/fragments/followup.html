@@ -1,0 +1,43 @@
+<div id="cases">
+<h1>MVH-Dashboard - FollowUp</h1>
+
+<p>
+    Aufgeführt sind anstehende FollowUps aus Onkostar, sortiert nach Fälligkeit des FollowUps.
+</p>
+
+{% if cases.len() > 0 %}
+
+<div class="followups">
+    {% for case in cases %}
+    <section {% if case.is_due_follow_up() %} class="followup warning" {% else if case.is_past_follow_up() %} class="followup invalid" {% else %} class="followup valid" {% endif %}>
+        <div class="followup-header">
+            <span>{{ case.formatted_case_id() }}</span>
+            {% if let Some(url) = case.onkostar_url() %}
+            <a href="{{ url }}" target="_blank">In Onkostar öffnen</a>
+            {% endif %}
+        </div>
+        <div class="followup-details">
+            {% match case.next_follow_up_due %}
+            {% when Some(next_follow_up_due) %}
+            {% if case.is_due_follow_up() %}
+            <div>Nächster Termin ist <b>jetzt</b> fällig:</div>
+            {% else if case.is_past_follow_up() %}
+            <div>Nächster Termin wäre gewesen am:</div>
+            {% else %}
+            <div>Nächster Termin:</div>
+            {% endif %}
+            <time datetime="{{ next_follow_up_due }}">{{ next_follow_up_due }}</time>
+            {% endwhen %}
+            {% when None %}
+            <div>Kein Follow-Up</div>
+            {% endwhen %}
+            {% endmatch %}
+        </div>
+    </section>
+    {% endfor %}
+</div>
+
+{% else %}
+<b>Keine FollowUps gefunden</b>
+{% endif %}
+</div>
