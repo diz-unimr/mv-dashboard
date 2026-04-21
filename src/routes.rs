@@ -185,6 +185,12 @@ async fn handle_followup_request(auth: AuthSession<Backend>) -> Result<impl Into
             .cases
             .into_iter()
             .filter(|case| case.next_follow_up_due.is_some())
+            .sorted_unstable_by_key(|case| {
+                case.next_follow_up_due
+                    .as_ref()
+                    .expect("no next follow up date")
+                    .clone()
+            })
             .collect_vec(),
     };
     Ok(Html(template.render().expect("Could not render template")).into_response())
