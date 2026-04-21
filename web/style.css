@@ -10,9 +10,26 @@ nav .nav-name {
     align-self: center;
 }
 
-nav .login {
+nav .nav-menu {
+    @apply flex flex-row gap-4;
+}
+
+nav .login,
+nav .nav-links {
     @apply flex flex-row gap-4;
     align-items: center;
+}
+
+nav .nav-links {
+    @apply pr-8 mr-8 border-r-2 border-gray-500;
+}
+
+nav .nav-links a {
+    @apply px-2 font-bold uppercase cursor-pointer;
+}
+
+nav .nav-links a:hover {
+    @apply underline;
 }
 
 nav .login .button {
@@ -97,32 +114,47 @@ select {
     display: block;
 }
 
+.followups {
+    @apply grid grid-cols-4 gap-4;
+}
+
 section.case,
+section.followup,
 .case-count {
     @apply shadow-md border-gray-300 my-6 overflow-hidden;
     border-width: 1px;
     border-radius: .3rem;
 }
 
-section.case summary {
+section.case summary,
+section.followup .followup-header {
     @apply text-lg bg-gray-800 px-2 font-bold relative cursor-pointer;
     color: white;
 }
 
-section.case.valid summary {
+section.case.valid summary,
+section.followup.valid .followup-header {
     @apply bg-green-800;
 }
 
-section.case.invalid summary {
+section.case.warning summary,
+section.followup.warning .followup-header {
+    @apply bg-yellow-600;
+}
+
+section.case.invalid summary,
+section.followup.invalid .followup-header {
     @apply bg-red-800
 }
 
-section.case summary a {
+section.case summary a,
+section.followup .followup-header a {
     @apply text-white font-normal text-base px-2 h-full;
     border-left: 1px solid rgba(255,255,255,.4);
 }
 
-section.case summary a:before {
+section.case summary a:before,
+section.followup .followup-header a:before {
     @apply mr-2 text-sm;
     content: "🏥"
 }
@@ -147,7 +179,8 @@ section.case summary span.deceased {
     @apply ml-4 font-normal;
 }
 
-section.case summary a:last-child {
+section.case summary a:last-child,
+section.followup .followup-header a:last-child {
     @apply absolute right-0;
 }
 
@@ -195,6 +228,18 @@ section.case div.case-details h4 {
 
 section.case div.case-details code {
     @apply bg-gray-200 font-mono p-1;
+}
+
+section.followup div.followup-details {
+    @apply p-2;
+}
+
+section.followup.warning div.followup-details {
+    background: repeating-linear-gradient(-45deg, var(--color-yellow-100), var(--color-yellow-100) 10px, transparent 10px, transparent 20px);
+}
+
+section.followup.invalid div.followup-details {
+    background: repeating-linear-gradient(-45deg, var(--color-red-100), var(--color-red-100) 10px, transparent 10px, transparent 20px);
 }
 
 .case-count {

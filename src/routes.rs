@@ -11,6 +11,7 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum_login::tower_sessions::SessionManagerLayer;
 use axum_login::{AuthManagerLayerBuilder, AuthSession, login_required};
+use itertools::Itertools;
 use log::error;
 use std::path;
 use tower_sessions::cookie::time::Duration;
@@ -56,6 +57,7 @@ pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> ax
 
     let ajax_routes = axum::Router::new()
         .route("/mv-dashboard/cases", get(handle_cases_request))
+        .route("/mv-dashboard/followups", get(handle_followup_request))
         .layer(from_fn(check_ajax_auth));
 
     axum::Router::new()
@@ -90,6 +92,12 @@ struct IndexTemplate {
 #[derive(Template)]
 #[template(path = "fragments/cases.html")]
 struct CasesTemplate {
+    cases: Vec<Case>,
+}
+
+#[derive(Template)]
+#[template(path = "fragments/followup.html")]
+struct FollowUpTemplate {
     cases: Vec<Case>,
 }
 
@@ -152,6 +160,32 @@ async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 
     let template = CasesTemplate {
         cases: response.cases,
+    };
+    Ok(Html(template.render().expect("Could not render template")).into_response())
+}
+
+#[allow(clippy::expect_used)]
+async fn handle_followup_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
+    let user = auth.user.clone().unwrap_or_default();
+
+    let response = match API_CLIENT.dashboard(user.clone()).await {
+        Ok(data) => data,
+        Err(e) => {
+            error!("{e}");
+            return Ok(Response::builder()
+                .status(500)
+                .body("Cannot connect to X-API".to_string())
+                .unwrap_or_default()
+                .into_response());
+        }
+    };
+
+    let template = FollowUpTemplate {
+        cases: response
+            .cases
+            .into_iter()
+            .filter(|case| case.next_follow_up_due.is_some())
+            .collect_vec(),
     };
     Ok(Html(template.render().expect("Could not render template")).into_response())
 }
