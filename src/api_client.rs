@@ -99,22 +99,20 @@ impl Case {
     }
 
     pub fn has_valid_submissions(&self) -> bool {
-        let clinical_submission = self
+        let clinical_submission = match self
             .clinical_submission
             .as_ref()
-            .map(|submission| &submission.sequencing_type);
-
-        let genomic_submission = self
-            .genomic_submission
-            .as_ref()
-            .map(|submission| &submission.sequencing_type);
-
-        let clinical_submission = match clinical_submission {
+            .map(|submission| &submission.sequencing_type)
+        {
             Some(sequencing_type) => sequencing_type,
             None => &SequencingType::default(),
         };
 
-        let genomic_submission = match genomic_submission {
+        let genomic_submission = match self
+            .genomic_submission
+            .as_ref()
+            .map(|submission| &submission.sequencing_type)
+        {
             Some(sequencing_type) => sequencing_type,
             None => &SequencingType::default(),
         };
