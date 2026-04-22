@@ -109,9 +109,12 @@ impl Case {
             .as_ref()
             .map(|submission| &submission.sequencing_type);
 
-        clinical_submission == genomic_submission
-            && clinical_submission != Some(&SequencingType::Invalid)
-            && genomic_submission != Some(&SequencingType::Invalid)
+        (clinical_submission != Some(&SequencingType::Missing)
+            && genomic_submission == Some(&SequencingType::Missing))
+            || (clinical_submission == Some(&SequencingType::Missing)
+                && genomic_submission != Some(&SequencingType::Missing))
+            || (clinical_submission == genomic_submission
+                && clinical_submission != Some(&SequencingType::Missing))
     }
 
     pub fn is_valid(&self) -> bool {
@@ -272,7 +275,7 @@ pub(crate) enum SequencingType {
     Panel,
     WesLr,
     #[default]
-    Invalid,
+    Missing,
 }
 
 impl Display for SequencingType {
@@ -283,7 +286,7 @@ impl Display for SequencingType {
             SequencingType::Wes => write!(f, "WES"),
             SequencingType::Panel => write!(f, "Panel"),
             SequencingType::WesLr => write!(f, "WGS/LR"),
-            SequencingType::Invalid => write!(f, "Ungültig"),
+            SequencingType::Missing => write!(f, "Ungültig"),
         }
     }
 }
@@ -300,7 +303,7 @@ impl<'de> Deserialize<'de> for SequencingType {
             "WES" => Ok(SequencingType::Wes),
             "Panel" => Ok(SequencingType::Panel),
             "WGS/LR" => Ok(SequencingType::WesLr),
-            _ => Ok(SequencingType::Invalid),
+            _ => Ok(SequencingType::Missing),
         }
     }
 }
@@ -599,5 +602,57 @@ mod tests {
         };
 
         assert!(!case.is_valid());
+    }
+
+    #[rstest]
+    #[case(SequencingType::Missing, SequencingType::Missing, false)]
+    #[case(SequencingType::Missing, SequencingType::Panel, true)]
+    #[case(SequencingType::Wes, SequencingType::Missing, true)]
+    #[case(SequencingType::Panel, SequencingType::Panel, true)]
+    #[case(SequencingType::Wes, SequencingType::Wes, true)]
+    #[case(SequencingType::Wgs, SequencingType::Wgs, true)]
+    #[case(SequencingType::Panel, SequencingType::Wes, false)]
+    #[case(SequencingType::Wes, SequencingType::Wgs, false)]
+    #[case(SequencingType::Wgs, SequencingType::Panel, false)]
+    fn test_case_has_valid_submissions(
+        #[case] clinical_sequencing_type: SequencingType,
+        #[case] genomic_sequencing_type: SequencingType,
+        #[case] expected: bool,
+    ) {
+        let case = Case {
+            case_id: "H1234-26".to_string(),
+            guid: Some("TESTGUID".to_string()),
+            deceased: false,
+            deceased_at_first_mtb: false,
+            mv_consent: Some(MvConsent {
+                consent_date: "2026-04-01".to_string(),
+                sequencing: true,
+                case_identification: true,
+                re_identification: true,
+            }),
+            broad_consent: Some(BroadConsent {
+                consent_date: "2026-04-01".to_string(),
+                electronic_available: true,
+            }),
+            mtb: Some(Mtb {
+                registration_date: "2026-04-16".to_string(),
+                care_plans: Some(vec![CarePlan {
+                    date: "2026-04-16".to_string(),
+                }]),
+            }),
+            clinical_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-16".to_string(),
+                sequencing_type: clinical_sequencing_type,
+            }),
+            genomic_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-16".to_string(),
+                sequencing_type: genomic_sequencing_type,
+            }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
+        };
+
+        assert_eq!(case.has_valid_submissions(), expected);
     }
 }
