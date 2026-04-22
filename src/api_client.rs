@@ -109,12 +109,22 @@ impl Case {
             .as_ref()
             .map(|submission| &submission.sequencing_type);
 
-        (clinical_submission != Some(&SequencingType::Missing)
-            && genomic_submission == Some(&SequencingType::Missing))
-            || (clinical_submission == Some(&SequencingType::Missing)
-                && genomic_submission != Some(&SequencingType::Missing))
+        let clinical_submission = match clinical_submission {
+            Some(sequencing_type) => sequencing_type,
+            None => &SequencingType::default(),
+        };
+
+        let genomic_submission = match genomic_submission {
+            Some(sequencing_type) => sequencing_type,
+            None => &SequencingType::default(),
+        };
+
+        (clinical_submission != &SequencingType::Missing
+            && genomic_submission == &SequencingType::Missing)
+            || (clinical_submission == &SequencingType::Missing
+                && genomic_submission != &SequencingType::Missing)
             || (clinical_submission == genomic_submission
-                && clinical_submission != Some(&SequencingType::Missing))
+                && clinical_submission != &SequencingType::Missing)
     }
 
     pub fn is_valid(&self) -> bool {
@@ -127,6 +137,14 @@ impl Case {
             }
             && !self.deceased_at_first_mtb
             && self.has_valid_submissions()
+            && match &self.clinical_submission {
+                Some(submission) => submission.sequencing_type != SequencingType::Missing,
+                _ => false,
+            }
+            && match &self.genomic_submission {
+                Some(submission) => submission.sequencing_type != SequencingType::Missing,
+                _ => false,
+            }
     }
 
     pub fn has_valid_case_number(&self) -> bool {
