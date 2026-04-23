@@ -100,23 +100,19 @@ impl Case {
     }
 
     pub fn has_valid_submissions(&self) -> bool {
-        let clinical_submission = match self
+        let clinical_submission = self
             .clinical_submission
             .as_ref()
-            .map(|submission| &submission.sequencing_type)
-        {
-            Some(sequencing_type) => sequencing_type,
-            None => &SequencingType::default(),
-        };
+            .map_or(&SequencingType::Missing, |submission| {
+                &submission.sequencing_type
+            });
 
-        let genomic_submission = match self
+        let genomic_submission = self
             .genomic_submission
             .as_ref()
-            .map(|submission| &submission.sequencing_type)
-        {
-            Some(sequencing_type) => sequencing_type,
-            None => &SequencingType::default(),
-        };
+            .map_or(&SequencingType::Missing, |submission| {
+                &submission.sequencing_type
+            });
 
         (clinical_submission != &SequencingType::Missing
             && genomic_submission == &SequencingType::Missing)
