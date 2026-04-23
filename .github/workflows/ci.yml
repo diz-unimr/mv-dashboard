@@ -61,3 +61,14 @@ jobs:
           docker tag ghcr.io/${{ github.repository }} ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           docker push ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           docker push ghcr.io/${{ github.repository }}
+
+      - name: Image Save
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        run: docker save -o target/${{ github.event.repository.name }}.tar ghcr.io/${{ github.repository }}
+
+      - name: Image Tar
+        if: ${{ github.event_name == 'release' && github.event.action == 'created' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/${{ github.event.repository.name }}.tar
