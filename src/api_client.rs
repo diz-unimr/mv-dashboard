@@ -2,6 +2,7 @@ use crate::CONFIG;
 use crate::auth::User;
 use chrono::{Duration, Local, NaiveDate};
 use itertools::{Itertools, sorted};
+use moka::future::Cache;
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
 use std::fmt::Display;
@@ -10,10 +11,11 @@ use std::ops::{Add, Sub};
 pub(crate) struct ApiClient {
     base_url: String,
     http_client: reqwest::Client,
+    cache: Option<Cache<String, Vec<Case>>>,
 }
 
 impl ApiClient {
-    pub fn new(base_url: &str) -> Self {
+    pub fn new(base_url: &str, cache: Option<Cache<String, Vec<Case>>>) -> Self {
         ApiClient {
             base_url: Self::clean_base_url(base_url),
             http_client: reqwest::ClientBuilder::new()
@@ -21,6 +23,7 @@ impl ApiClient {
                 .timeout(std::time::Duration::from_secs(30))
                 .build()
                 .unwrap_or_default(),
+            cache,
         }
     }
 
@@ -36,6 +39,12 @@ impl ApiClient {
     }
 
     pub async fn dashboard(&self, user: User) -> Result<DashboardResponse, String> {
+        if let Some(cache) = &self.cache
+            && let Some(cases) = cache.get("dashboard").await
+        {
+            return Ok(DashboardResponse { cases });
+        }
+
         let response = self
             .http_client
             .get(self.full_url("/x-api/mv-dashboard"))
@@ -52,6 +61,10 @@ impl ApiClient {
 
         cases.sort_unstable_by_key(Case::formatted_case_id);
 
+        if let Some(cache) = &self.cache {
+            cache.insert("dashboard".to_string(), cases.clone()).await;
+        }
+
         Ok(DashboardResponse { cases })
     }
 }
@@ -60,7 +73,7 @@ pub(crate) struct DashboardResponse {
     pub(crate) cases: Vec<Case>,
 }
 
-#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Case {
     #[serde(rename = "caseId")]
@@ -207,14 +220,14 @@ impl Case {
     }
 }
 
-#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Mtb {
     pub(crate) registration_date: String,
     pub(crate) care_plans: Option<Vec<CarePlan>>,
 }
 
-#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CarePlan {
     pub(crate) date: String,
@@ -242,7 +255,7 @@ trait Consent {
     fn is_valid(&self) -> bool;
 }
 
-#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MvConsent {
     pub(crate) consent_date: String,
@@ -257,7 +270,7 @@ impl Consent for MvConsent {
     }
 }
 
-#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct BroadConsent {
     pub(crate) consent_date: String,
@@ -270,7 +283,7 @@ impl Consent for BroadConsent {
     }
 }
 
-#[derive(serde::Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Submission {
     #[serde(default = "String::new")]
@@ -280,7 +293,7 @@ pub(crate) struct Submission {
     pub(crate) sequencing_type: SequencingType,
 }
 
-#[derive(Default, Debug, Eq, PartialEq)]
+#[derive(Clone, Default, Debug, Eq, PartialEq)]
 pub(crate) enum SequencingType {
     None,
     Wgs,
@@ -325,11 +338,64 @@ impl<'de> Deserialize<'de> for SequencingType {
 #[allow(clippy::expect_used)]
 mod tests {
     use crate::api_client::{
-        BroadConsent, CarePlan, Case, Mtb, MvConsent, SequencingType, Submission,
+        ApiClient, BroadConsent, CarePlan, Case, Mtb, MvConsent, SequencingType, Submission,
     };
+    use crate::auth::User;
+    use httpmock::Method::GET;
+    use httpmock::MockServer;
     use itertools::{Itertools, sorted};
+    use moka::future::Cache;
     use rstest::rstest;
     use std::fs;
+
+    #[tokio::test]
+    async fn test_should_request_from_api() {
+        let content = fs::read_to_string("testresources/test1.json").expect("Unable to read file");
+        let mock_server = MockServer::start();
+        let mock = mock_server.mock(|when, then| {
+            when.method(GET).path("/x-api/mv-dashboard");
+            then.status(200).body(format!("[{content}]"));
+        });
+
+        let api_client = ApiClient::new(&mock_server.base_url(), None);
+        let response = api_client.dashboard(User::default()).await;
+
+        assert!(response.is_ok());
+
+        mock.assert();
+    }
+
+    #[tokio::test]
+    async fn test_should_use_cached_value() {
+        let mock_server = MockServer::start();
+        let mock = mock_server.mock(|when, then| {
+            when.method(GET).path("/x-api/mv-dashboard");
+            then.status(500)
+                .body("some nonsense for testing purposes - should not get requested");
+        });
+
+        let expected_content = serde_json::from_str::<Case>(
+            &fs::read_to_string("testresources/test1.json").expect("Unable to read file"),
+        )
+        .expect("Unable to parse json");
+        let cache = Cache::builder().build();
+        cache
+            .insert("dashboard".to_string(), vec![expected_content.clone()])
+            .await;
+
+        let api_client = ApiClient::new(&mock_server.base_url(), Some(cache));
+        let response = api_client.dashboard(User::default()).await;
+
+        assert!(response.is_ok());
+        assert!(
+            response
+                .expect("error response")
+                .cases
+                .contains(&expected_content)
+        );
+
+        mock.assert_calls(0);
+    }
 
     #[test]
     fn test_should_find_first_mtb_before_mv_consent() {

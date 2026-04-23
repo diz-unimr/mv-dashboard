@@ -25,4 +25,12 @@ pub struct Config {
         help = "The cookie domain to be used (optional)"
     )]
     pub cookie_domain: Option<String>,
+
+    #[clap(
+        long,
+        env = "CACHE_ENABLED",
+        default_value = "false",
+        help = "Enable caching of dashboard data"
+    )]
+    pub cache_enabled: bool,
 }

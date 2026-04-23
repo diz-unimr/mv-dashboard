@@ -2,7 +2,9 @@ use crate::auth::Backend;
 use crate::routes::routes;
 use clap::Parser;
 use include_dir::{Dir, include_dir};
+use moka::future::Cache;
 use std::sync::LazyLock;
+use std::time::Duration;
 
 pub mod api_client;
 pub mod auth;
@@ -13,8 +15,18 @@ static CONFIG: LazyLock<config::Config> = LazyLock::new(config::Config::parse);
 
 static ASSETS: Dir = include_dir!("resources/assets");
 
-static API_CLIENT: LazyLock<api_client::ApiClient> =
-    LazyLock::new(|| api_client::ApiClient::new(&CONFIG.onkostar_url.clone()));
+static API_CLIENT: LazyLock<api_client::ApiClient> = LazyLock::new(|| {
+    if CONFIG.cache_enabled {
+        let cache = Cache::builder()
+            .max_capacity(1)
+            .time_to_live(Duration::from_mins(5))
+            .build();
+
+        api_client::ApiClient::new(&CONFIG.onkostar_url.clone(), Some(cache))
+    } else {
+        api_client::ApiClient::new(&CONFIG.onkostar_url.clone(), None)
+    }
+});
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
