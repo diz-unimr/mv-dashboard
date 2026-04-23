@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.2...v0.1.3) (2026-04-23)
+
+
+### Features
+
+* add optional response caching ([#11](https://github.com/diz-unimr/mv-dashboard/issues/11)) ([7cf9604](https://github.com/diz-unimr/mv-dashboard/commit/7cf9604ef9316589dbbbff9560c22a17c4fea8e3))
+
 ## [0.1.2](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.1...v0.1.2) (2026-04-23)
 
 
