@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.1...v0.1.2) (2026-04-23)
+
+
+### Features
+
+* add follow-up view ([#5](https://github.com/diz-unimr/mv-dashboard/issues/5)) ([199e9b6](https://github.com/diz-unimr/mv-dashboard/commit/199e9b60a090ccd6c25cac73e1aec83a33d4f28c))
+
+
+### Bug Fixes
+
+* valid sequence type combinations ([#7](https://github.com/diz-unimr/mv-dashboard/issues/7)) ([3db6d95](https://github.com/diz-unimr/mv-dashboard/commit/3db6d9592e64e498b094d39345fb52129eb9761e))
+
 ## [0.1.1](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.0...v0.1.1) (2026-04-20)
 
 
