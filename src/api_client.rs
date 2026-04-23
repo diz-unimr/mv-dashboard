@@ -63,7 +63,8 @@ pub(crate) struct DashboardResponse {
 #[derive(serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Case {
-    pub(crate) case_id: String,
+    #[serde(rename = "caseId")]
+    pub(crate) id: String,
     pub(crate) guid: Option<String>,
     #[serde(default)]
     pub(crate) deceased: bool,
@@ -82,17 +83,17 @@ impl Case {
     pub fn formatted_case_id(&self) -> String {
         let re = Regex::new(r"^H(?<number>\d+)-(?<year>\d{2})$").expect("Invalid regex pattern");
 
-        let Some(caps) = re.captures(&self.case_id) else {
-            return self.case_id.clone();
+        let Some(caps) = re.captures(&self.id) else {
+            return self.id.clone();
         };
 
         let number = match caps.name("number") {
             Some(number) => number.as_str(),
-            None => return self.case_id.clone(),
+            None => return self.id.clone(),
         };
         let year = match caps.name("year") {
             Some(year) => year.as_str(),
-            None => return self.case_id.clone(),
+            None => return self.id.clone(),
         };
 
         format!("H/20{year}/{number}")
@@ -146,7 +147,7 @@ impl Case {
     }
 
     pub fn has_valid_case_number(&self) -> bool {
-        !self.case_id.starts_with('!')
+        !self.id.starts_with('!')
     }
 
     pub fn onkostar_url(&self) -> Option<String> {
@@ -337,7 +338,7 @@ mod tests {
     #[test]
     fn test_should_find_first_mtb_before_mv_consent() {
         let case = Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -377,7 +378,7 @@ mod tests {
     #[test]
     fn test_should_find_first_mtb_same_day_mv_consent() {
         let case = Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -422,7 +423,7 @@ mod tests {
     #[test]
     fn test_should_find_first_mtb_after_mv_consent() {
         let case = Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -462,7 +463,7 @@ mod tests {
     #[test]
     fn test_should_not_any_mtb_after_mv_consent() {
         let case = Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -526,7 +527,7 @@ mod tests {
     #[case(
         "testresources/test1.json",
         Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -562,7 +563,7 @@ mod tests {
     #[case(
         "testresources/test2.json",
         Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -584,7 +585,7 @@ mod tests {
     #[test]
     fn test_should_show_invalid_different_submission_types() {
         let case = Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -636,7 +637,7 @@ mod tests {
         #[case] expected: bool,
     ) {
         let case = Case {
-            case_id: "H1234-26".to_string(),
+            id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
