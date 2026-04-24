@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.3...v0.1.4) (2026-04-24)
+
+
+### Features
+
+* add optional cache duration setting ([#15](https://github.com/diz-unimr/mv-dashboard/issues/15)) ([6a5418f](https://github.com/diz-unimr/mv-dashboard/commit/6a5418fcfb5c8b7cdfd12f6a88939f9a506abf28))
+
 ## [0.1.3](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.2...v0.1.3) (2026-04-23)
 
 
