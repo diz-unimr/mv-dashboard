@@ -15,7 +15,7 @@ pub struct Config {
         long,
         env = "ONKOSTAR_URL",
         default_value = "http://localhost:8080/onkostar",
-        help = "The X-API URL"
+        help = "The Onkostar base URL"
     )]
     pub onkostar_url: String,
 
@@ -28,9 +28,8 @@ pub struct Config {
 
     #[clap(
         long,
-        env = "CACHE_ENABLED",
-        default_value = "false",
-        help = "Enable caching of dashboard data"
+        env = "CACHE_DURATION",
+        help = "Enable response caching with the given duration (optional)"
     )]
-    pub cache_enabled: bool,
+    pub cache_duration: Option<humantime::Duration>,
 }

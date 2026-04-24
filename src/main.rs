@@ -16,12 +16,11 @@ static CONFIG: LazyLock<config::Config> = LazyLock::new(config::Config::parse);
 static ASSETS: Dir = include_dir!("resources/assets");
 
 static API_CLIENT: LazyLock<api_client::ApiClient> = LazyLock::new(|| {
-    if CONFIG.cache_enabled {
+    if let Some(cache_duration) = CONFIG.cache_duration {
         let cache = Cache::builder()
             .max_capacity(1)
-            .time_to_live(Duration::from_mins(5))
+            .time_to_live(Duration::from_secs(cache_duration.as_secs()))
             .build();
-
         api_client::ApiClient::new(&CONFIG.onkostar_url.clone(), Some(cache))
     } else {
         api_client::ApiClient::new(&CONFIG.onkostar_url.clone(), None)

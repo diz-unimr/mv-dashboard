@@ -24,6 +24,7 @@ include_dir = "0.7"
 chrono = "0.4"
 itertools = "0.14"
 moka = { version = "0.12", features = ["future"] }
+humantime = "2.3"
 
 [dev-dependencies]
 rstest = "0.26"
