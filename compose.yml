@@ -1,0 +1,8 @@
+services:
+
+  mv-dashboard:
+    image: ghcr.io/diz-unimr/mv-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      ONKOSTAR_URL: http://localhost:8080/onkostar
