@@ -225,6 +225,7 @@ impl Case {
 pub(crate) struct Mtb {
     pub(crate) registration_date: String,
     pub(crate) care_plans: Option<Vec<CarePlan>>,
+    pub(crate) findings: Option<Vec<Finding>>,
 }
 
 #[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
@@ -246,6 +247,30 @@ impl Ord for CarePlan {
 }
 
 impl CarePlan {
+    pub fn naive_date(&self) -> Option<NaiveDate> {
+        NaiveDate::parse_from_str(&self.date, "%Y-%m-%d").ok()
+    }
+}
+
+#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Finding {
+    pub(crate) date: String,
+}
+
+impl PartialOrd for Finding {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Finding {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.naive_date().cmp(&other.naive_date())
+    }
+}
+
+impl Finding {
     pub fn naive_date(&self) -> Option<NaiveDate> {
         NaiveDate::parse_from_str(&self.date, "%Y-%m-%d").ok()
     }
@@ -338,7 +363,8 @@ impl<'de> Deserialize<'de> for SequencingType {
 #[allow(clippy::expect_used)]
 mod tests {
     use crate::api_client::{
-        ApiClient, BroadConsent, CarePlan, Case, Mtb, MvConsent, SequencingType, Submission,
+        ApiClient, BroadConsent, CarePlan, Case, Finding, Mtb, MvConsent, SequencingType,
+        Submission,
     };
     use crate::auth::User;
     use httpmock::Method::GET;
@@ -419,6 +445,9 @@ mod tests {
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-13".to_string(),
                 }]),
+                findings: Some(vec![Finding {
+                    date: "2026-04-13".to_string(),
+                }]),
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
@@ -464,6 +493,9 @@ mod tests {
                         date: "2026-04-14".to_string(),
                     },
                 ]),
+                findings: Some(vec![Finding {
+                    date: "2026-04-11".to_string(),
+                }]),
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
@@ -504,6 +536,7 @@ mod tests {
                 care_plans: Some(vec![CarePlan {
                     date: "2026-03-31".to_string(),
                 }]),
+                findings: None,
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
@@ -542,6 +575,7 @@ mod tests {
             mtb: Some(Mtb {
                 registration_date: "2026-03-31".to_string(),
                 care_plans: None,
+                findings: None,
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
@@ -598,6 +632,7 @@ mod tests {
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-14".to_string(),
                 }]),
+                findings: None,
             }),
             mv_consent: Some(MvConsent {
                 consent_date: "2026-04-14".to_string(),
@@ -666,6 +701,7 @@ mod tests {
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-16".to_string(),
                 }]),
+                findings: None,
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
@@ -718,6 +754,7 @@ mod tests {
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-16".to_string(),
                 }]),
+                findings: None,
             }),
             clinical_submission: Some(Submission {
                 id: "KDK1234567".to_string(),
