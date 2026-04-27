@@ -131,6 +131,24 @@
                     {% endwhen %}
                     {% endmatch %}
                 </div>
+                <div>
+                    {% match mtb.findings %}
+                    {% when Some(findings) %}
+                    <p>{{ findings.len() }} {{ findings.len() | pluralize("MolGen-Befund", "MolGen-Befund") }}</p>
+                    <ul>
+                        {% for finding in findings %}
+                        <li>
+                            MTB am
+                            <time datetime="{{ finding.date }}">{{ finding.date }}</time>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endwhen %}
+                    {% when None %}
+                    <p class="warning-part">Keine MolGen-Befunde</p>
+                    {% endwhen %}
+                    {% endmatch %}
+                </div>
                 {% endwhen %}
                 {% when None %}
                 <p class="invalid-part">Kein MTB mit H-Nummer</p>
