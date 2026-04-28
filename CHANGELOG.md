@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.4...v0.1.5) (2026-04-28)
+
+
+### Features
+
+* add findings ([#17](https://github.com/diz-unimr/mv-dashboard/issues/17)) ([8d53131](https://github.com/diz-unimr/mv-dashboard/commit/8d53131f7172a7cf4734821da1e767ec5c89cfd3))
+* add mtb and findings validation ([#20](https://github.com/diz-unimr/mv-dashboard/issues/20)) ([5b12b0e](https://github.com/diz-unimr/mv-dashboard/commit/5b12b0e54f5d8c5041dd116181c5221ebd19037e))
+
 ## [0.1.4](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.3...v0.1.4) (2026-04-24)
 
 
