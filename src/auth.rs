@@ -94,11 +94,19 @@ impl AuthnBackend for Backend {
         {
             Ok(response) => {
                 if !response.status().is_success() {
+                    log::error!(
+                        "Cannot login user '{}' - Status code {}",
+                        &credentials.username,
+                        response.status()
+                    );
                     return Ok(None);
                 }
                 response.text().await.unwrap_or_default()
             }
-            Err(_) => return Ok(None),
+            Err(err) => {
+                log::error!("Cannot login user '{}': {}", &credentials.username, err);
+                return Ok(None);
+            }
         };
 
         let Ok(hash) = hash(credentials.password.clone(), 10) else {
