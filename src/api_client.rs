@@ -5,6 +5,7 @@ use itertools::{Itertools, sorted};
 use moka::future::Cache;
 use regex::Regex;
 use serde::{Deserialize, Deserializer};
+use std::collections::HashSet;
 use std::fmt::Display;
 use std::ops::{Add, Sub};
 
@@ -243,6 +244,14 @@ pub(crate) struct Mtb {
     pub(crate) registration_date: String,
     pub(crate) care_plans: Option<Vec<CarePlan>>,
     pub(crate) findings: Option<Vec<Finding>>,
+}
+
+impl Mtb {
+    pub fn distinct_findings(&self) -> Option<Vec<&Finding>> {
+        self.findings
+            .as_ref()
+            .map(|findings| findings.iter().dedup().collect())
+    }
 }
 
 #[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
