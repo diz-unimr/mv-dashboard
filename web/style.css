@@ -286,3 +286,9 @@ section.followup.invalid div.followup-details {
 .htmx-request .loading-indicator {
     @apply opacity-100 visible;
 }
+
+footer {
+    @apply bg-gray-600 text-white p-4 flex flex-row justify-between;
+    position: absolute;
+    bottom: 0;
+}
