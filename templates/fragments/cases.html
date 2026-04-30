@@ -132,7 +132,7 @@
                     {% endmatch %}
                 </div>
                 <div>
-                    {% match mtb.findings %}
+                    {% match mtb.distinct_findings() %}
                     {% when Some(findings) %}
                     <p>{{ findings.len() }} {{ findings.len() | pluralize("MolGen-Befund", "MolGen-Befund") }}</p>
                     <ul>
