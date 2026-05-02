@@ -1,5 +1,5 @@
-use crate::api_client::Case;
 use crate::auth::{Backend, handle_login, handle_logout};
+use crate::dashboard::{ApiClient, Case};
 use crate::{API_CLIENT, ASSETS};
 use askama::Template;
 use axum::body::Body;
@@ -146,7 +146,7 @@ async fn handle_index_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
-    let response = match API_CLIENT.dashboard(user.clone()).await {
+    let response = match API_CLIENT.request_dashboard_data(user.clone()).await {
         Ok(data) => data,
         Err(e) => {
             error!("{e}");
@@ -168,7 +168,7 @@ async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 async fn handle_followup_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
-    let response = match API_CLIENT.dashboard(user.clone()).await {
+    let response = match API_CLIENT.request_dashboard_data(user.clone()).await {
         Ok(data) => data,
         Err(e) => {
             error!("{e}");
