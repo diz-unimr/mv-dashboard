@@ -4,12 +4,12 @@ version = "0.1.5"
 edition = "2024"
 
 [dependencies]
-tokio = { version = "1.51", features = ["macros", "rt-multi-thread", "time", "tracing"] }
+tokio = { version = "1.52", features = ["macros", "rt-multi-thread", "time", "tracing"] }
 tower-http = {version = "0.6", features = ["trace", "cors"]}
 tower-sessions = "0.14"
 axum = { version = "0.8", features = ["tokio", "tracing"] }
 axum-login = { version = "0.18"}
-askama = "0.15"
+askama = "0.16"
 clap = { version = "4.6", features = ["cargo", "env", "derive"] }
 tracing-subscriber = "0.3"
 reqwest = {version = "0.13", features = ["json"], default-features = false}
