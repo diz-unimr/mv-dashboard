@@ -1,4 +1,3 @@
-use crate::CONFIG;
 use crate::auth::User;
 use chrono::{Duration, Local, NaiveDate};
 use itertools::{Itertools, sorted};
@@ -34,6 +33,8 @@ pub(crate) struct Case {
     pub(crate) clinical_submission: Option<Submission>,
     pub(crate) genomic_submission: Option<Submission>,
     pub(crate) next_follow_up_due: Option<String>,
+    #[serde(skip)]
+    onkostar_url: Option<String>,
 }
 
 impl Case {
@@ -121,12 +122,18 @@ impl Case {
         !self.id.starts_with('!')
     }
 
+    pub fn with_onkostar_url(self, onkostar_url: &str) -> Self {
+        Self {
+            onkostar_url: Some(onkostar_url.to_string()),
+            ..self
+        }
+    }
+
     pub fn onkostar_url(&self) -> Option<String> {
-        if let Some(guid) = &self.guid {
-            return Some(format!(
-                "{}/index.html?procedureId={}",
-                &CONFIG.onkostar_url, guid
-            ));
+        if let Some(guid) = &self.guid
+            && let Some(onkostar_url) = &self.onkostar_url
+        {
+            return Some(format!("{onkostar_url}/index.html?procedureId={guid}"));
         }
 
         None
@@ -344,6 +351,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -392,6 +400,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -440,6 +449,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -481,6 +491,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -546,6 +557,7 @@ mod tests {
         Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: None,
             deceased: false,
             deceased_at_first_mtb: false,
             mtb: Some(Mtb {
@@ -583,6 +595,7 @@ mod tests {
         Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: None,
             deceased: false,
             deceased_at_first_mtb: false,
             mtb: None,
@@ -605,6 +618,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -658,6 +672,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -698,6 +713,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {
@@ -740,6 +756,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
             mv_consent: Some(MvConsent {

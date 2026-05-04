@@ -1,15 +1,16 @@
 use crate::auth::User;
 use crate::dashboard::{ApiClient, Case, DashboardData};
+use itertools::Itertools;
 use moka::future::Cache;
 
-pub(crate) struct XApiClient {
+pub(super) struct XApiClient {
     base_url: String,
     http_client: reqwest::Client,
     cache: Option<Cache<String, Vec<Case>>>,
 }
 
 impl XApiClient {
-    pub fn new(base_url: &str, cache: Option<Cache<String, Vec<Case>>>) -> Self {
+    pub(super) fn new(base_url: &str, cache: Option<Cache<String, Vec<Case>>>) -> Self {
         XApiClient {
             base_url: Self::clean_base_url(base_url),
             http_client: reqwest::ClientBuilder::new()
@@ -56,7 +57,10 @@ where
         let mut cases = response
             .json::<Vec<Case>>()
             .await
-            .map_err(|e| format!("Cannot read X-API response: {e}"))?;
+            .map_err(|e| format!("Cannot read X-API response: {e}"))?
+            .into_iter()
+            .map(|case| case.with_onkostar_url(&self.base_url))
+            .collect_vec();
 
         cases.sort_unstable_by_key(Case::formatted_case_id);
 
