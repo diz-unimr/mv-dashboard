@@ -6,6 +6,14 @@
   "include-component-in-tag": false,
   "release-type": "rust",
   "packages": {
-    ".": {}
+    ".": {
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "templates/index.html",
+          "xpath": "//span[@class=\"footer_version\"]"
+        }
+      ]
+    }
   }
 }
