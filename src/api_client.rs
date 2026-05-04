@@ -1,22 +1,17 @@
-use crate::CONFIG;
 use crate::auth::User;
-use chrono::{Duration, Local, NaiveDate};
-use itertools::{Itertools, sorted};
+use crate::dashboard::{ApiClient, Case, DashboardData};
+use itertools::Itertools;
 use moka::future::Cache;
-use regex::Regex;
-use serde::{Deserialize, Deserializer};
-use std::fmt::Display;
-use std::ops::{Add, Sub};
 
-pub(crate) struct ApiClient {
+pub(super) struct XApiClient {
     base_url: String,
     http_client: reqwest::Client,
     cache: Option<Cache<String, Vec<Case>>>,
 }
 
-impl ApiClient {
-    pub fn new(base_url: &str, cache: Option<Cache<String, Vec<Case>>>) -> Self {
-        ApiClient {
+impl XApiClient {
+    pub(super) fn new(base_url: &str, cache: Option<Cache<String, Vec<Case>>>) -> Self {
+        XApiClient {
             base_url: Self::clean_base_url(base_url),
             http_client: reqwest::ClientBuilder::new()
                 .user_agent(concat!("mv-dashboard", env!("CARGO_PKG_VERSION")))
@@ -37,12 +32,17 @@ impl ApiClient {
     fn full_url(&self, path: &str) -> String {
         format!("{}{}", self.base_url, path)
     }
+}
 
-    pub async fn dashboard(&self, user: User) -> Result<DashboardResponse, String> {
+impl ApiClient for XApiClient
+where
+    Self: Send + Sync,
+{
+    async fn request_dashboard_data(&self, user: User) -> Result<DashboardData, String> {
         if let Some(cache) = &self.cache
             && let Some(cases) = cache.get("dashboard").await
         {
-            return Ok(DashboardResponse { cases });
+            return Ok(DashboardData { cases });
         }
 
         let response = self
@@ -57,7 +57,10 @@ impl ApiClient {
         let mut cases = response
             .json::<Vec<Case>>()
             .await
-            .map_err(|e| format!("Cannot read X-API response: {e}"))?;
+            .map_err(|e| format!("Cannot read X-API response: {e}"))?
+            .into_iter()
+            .map(|case| case.with_onkostar_url(&self.base_url))
+            .collect_vec();
 
         cases.sort_unstable_by_key(Case::formatted_case_id);
 
@@ -65,338 +68,19 @@ impl ApiClient {
             cache.insert("dashboard".to_string(), cases.clone()).await;
         }
 
-        Ok(DashboardResponse { cases })
-    }
-}
-
-pub(crate) struct DashboardResponse {
-    pub(crate) cases: Vec<Case>,
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct Case {
-    #[serde(rename = "caseId")]
-    pub(crate) id: String,
-    pub(crate) guid: Option<String>,
-    #[serde(default)]
-    pub(crate) deceased: bool,
-    #[serde(default)]
-    pub(crate) deceased_at_first_mtb: bool,
-    pub(crate) mtb: Option<Mtb>,
-    pub(crate) mv_consent: Option<MvConsent>,
-    pub(crate) broad_consent: Option<BroadConsent>,
-    pub(crate) clinical_submission: Option<Submission>,
-    pub(crate) genomic_submission: Option<Submission>,
-    pub(crate) next_follow_up_due: Option<String>,
-}
-
-impl Case {
-    #[allow(clippy::expect_used)]
-    pub fn formatted_case_id(&self) -> String {
-        let re = Regex::new(r"^H(?<number>\d+)-(?<year>\d{2})$").expect("Invalid regex pattern");
-
-        let Some(caps) = re.captures(&self.id) else {
-            return self.id.clone();
-        };
-
-        let number = match caps.name("number") {
-            Some(number) => number.as_str(),
-            None => return self.id.clone(),
-        };
-        let year = match caps.name("year") {
-            Some(year) => year.as_str(),
-            None => return self.id.clone(),
-        };
-
-        format!("H/20{year}/{number}")
-    }
-
-    pub fn has_valid_submissions(&self) -> bool {
-        let clinical_submission = self
-            .clinical_submission
-            .as_ref()
-            .map_or(&SequencingType::Missing, |submission| {
-                &submission.sequencing_type
-            });
-
-        let genomic_submission = self
-            .genomic_submission
-            .as_ref()
-            .map_or(&SequencingType::Missing, |submission| {
-                &submission.sequencing_type
-            });
-
-        (clinical_submission != &SequencingType::Missing
-            && genomic_submission == &SequencingType::Missing)
-            || (clinical_submission == &SequencingType::Missing
-                && genomic_submission != &SequencingType::Missing)
-            || (clinical_submission == genomic_submission
-                && clinical_submission != &SequencingType::Missing)
-    }
-
-    pub fn is_valid(&self) -> bool {
-        self.is_first_mtb_after_mv_consent()
-            && self.broad_consent.is_some()
-            && match &self.mtb {
-                Some(mtb) => {
-                    if let Some(care_plans) = &mtb.care_plans
-                        && care_plans.len() > 1
-                    {
-                        if let Some(findings) = &mtb.findings
-                            && !findings.is_empty()
-                        {
-                            true
-                        } else {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                }
-                None => false,
-            }
-            && match &self.mv_consent {
-                Some(mv_consent) => mv_consent.is_valid(),
-                None => false,
-            }
-            && !self.deceased_at_first_mtb
-            && self.has_valid_submissions()
-            && match &self.clinical_submission {
-                Some(submission) => submission.sequencing_type != SequencingType::Missing,
-                _ => false,
-            }
-            && match &self.genomic_submission {
-                Some(submission) => submission.sequencing_type != SequencingType::Missing,
-                _ => false,
-            }
-    }
-
-    pub fn has_valid_case_number(&self) -> bool {
-        !self.id.starts_with('!')
-    }
-
-    pub fn onkostar_url(&self) -> Option<String> {
-        if let Some(guid) = &self.guid {
-            return Some(format!(
-                "{}/index.html?procedureId={}",
-                &CONFIG.onkostar_url, guid
-            ));
-        }
-
-        None
-    }
-
-    pub fn is_first_mtb_after_mv_consent(&self) -> bool {
-        if let Some(mv_consent) = &self.mv_consent
-            && let Some(mtb) = &self.mtb
-        {
-            let Some(care_plans) = &mtb.care_plans else {
-                return false;
-            };
-
-            if let Some(first_care_plan) = sorted(care_plans).collect_vec().first() {
-                let Ok(mv_consent_date) =
-                    NaiveDate::parse_from_str(&mv_consent.consent_date, "%Y-%m-%d")
-                else {
-                    return false;
-                };
-                let Ok(first_care_plan_date) =
-                    NaiveDate::parse_from_str(&first_care_plan.date, "%Y-%m-%d")
-                else {
-                    return false;
-                };
-                return mv_consent_date <= first_care_plan_date;
-            }
-            return false;
-        }
-        false
-    }
-
-    pub fn is_past_follow_up(&self) -> bool {
-        if let Some(next_follow_up_due) = &self.next_follow_up_due {
-            let Ok(date) = NaiveDate::parse_from_str(next_follow_up_due, "%Y-%m-%d") else {
-                return false;
-            };
-
-            return date < Local::now().date_naive();
-        }
-        false
-    }
-
-    pub fn is_due_follow_up(&self) -> bool {
-        if let Some(next_follow_up_due) = &self.next_follow_up_due {
-            let Ok(date) = NaiveDate::parse_from_str(next_follow_up_due, "%Y-%m-%d") else {
-                return false;
-            };
-
-            return date.add(Duration::weeks(1)) > Local::now().date_naive()
-                && date.sub(Duration::weeks(1)) < Local::now().date_naive();
-        }
-        false
-    }
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct Mtb {
-    pub(crate) registration_date: String,
-    pub(crate) care_plans: Option<Vec<CarePlan>>,
-    pub(crate) findings: Option<Vec<Finding>>,
-}
-
-impl Mtb {
-    pub fn distinct_findings(&self) -> Option<Vec<&Finding>> {
-        self.findings
-            .as_ref()
-            .map(|findings| findings.iter().dedup().collect())
-    }
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct CarePlan {
-    pub(crate) date: String,
-}
-
-impl PartialOrd for CarePlan {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for CarePlan {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.naive_date().cmp(&other.naive_date())
-    }
-}
-
-impl CarePlan {
-    pub fn naive_date(&self) -> Option<NaiveDate> {
-        NaiveDate::parse_from_str(&self.date, "%Y-%m-%d").ok()
-    }
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct Finding {
-    pub(crate) date: String,
-}
-
-impl PartialOrd for Finding {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Finding {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.naive_date().cmp(&other.naive_date())
-    }
-}
-
-impl Finding {
-    pub fn naive_date(&self) -> Option<NaiveDate> {
-        NaiveDate::parse_from_str(&self.date, "%Y-%m-%d").ok()
-    }
-}
-
-trait Consent {
-    fn is_valid(&self) -> bool;
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct MvConsent {
-    pub(crate) consent_date: String,
-    pub(crate) sequencing: bool,
-    pub(crate) case_identification: bool,
-    pub(crate) re_identification: bool,
-}
-
-impl Consent for MvConsent {
-    fn is_valid(&self) -> bool {
-        self.sequencing
-    }
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct BroadConsent {
-    pub(crate) consent_date: String,
-    pub(crate) electronic_available: bool,
-}
-
-impl Consent for BroadConsent {
-    fn is_valid(&self) -> bool {
-        self.electronic_available
-    }
-}
-
-#[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct Submission {
-    #[serde(default = "String::new")]
-    pub(crate) id: String,
-    pub(crate) date: String,
-    #[serde(default = "SequencingType::default")]
-    pub(crate) sequencing_type: SequencingType,
-}
-
-#[derive(Clone, Default, Debug, Eq, PartialEq)]
-pub(crate) enum SequencingType {
-    None,
-    Wgs,
-    Wes,
-    Panel,
-    WesLr,
-    #[default]
-    Missing,
-}
-
-impl Display for SequencingType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            SequencingType::None => write!(f, "Keine"),
-            SequencingType::Wgs => write!(f, "WGS"),
-            SequencingType::Wes => write!(f, "WES"),
-            SequencingType::Panel => write!(f, "Panel"),
-            SequencingType::WesLr => write!(f, "WGS/LR"),
-            SequencingType::Missing => write!(f, "Ungültig"),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for SequencingType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.as_str() {
-            "Keine" => Ok(SequencingType::None),
-            "WGS" => Ok(SequencingType::Wgs),
-            "WES" => Ok(SequencingType::Wes),
-            "Panel" => Ok(SequencingType::Panel),
-            "WGS/LR" => Ok(SequencingType::WesLr),
-            _ => Ok(SequencingType::Missing),
-        }
+        Ok(DashboardData { cases })
     }
 }
 
 #[cfg(test)]
 #[allow(clippy::expect_used)]
 mod tests {
-    use crate::api_client::{
-        ApiClient, BroadConsent, CarePlan, Case, Finding, Mtb, MvConsent, SequencingType,
-        Submission,
-    };
+    use crate::api_client::XApiClient;
     use crate::auth::User;
+    use crate::dashboard::{ApiClient, Case};
     use httpmock::Method::GET;
     use httpmock::MockServer;
-    use itertools::{Itertools, sorted};
     use moka::future::Cache;
-    use rstest::rstest;
     use std::fs;
 
     #[tokio::test]
@@ -408,8 +92,8 @@ mod tests {
             then.status(200).body(format!("[{content}]"));
         });
 
-        let api_client = ApiClient::new(&mock_server.base_url(), None);
-        let response = api_client.dashboard(User::default()).await;
+        let api_client = XApiClient::new(&mock_server.base_url(), None);
+        let response = api_client.request_dashboard_data(User::default()).await;
 
         assert!(response.is_ok());
 
@@ -434,8 +118,8 @@ mod tests {
             .insert("dashboard".to_string(), vec![expected_content.clone()])
             .await;
 
-        let api_client = ApiClient::new(&mock_server.base_url(), Some(cache));
-        let response = api_client.dashboard(User::default()).await;
+        let api_client = XApiClient::new(&mock_server.base_url(), Some(cache));
+        let response = api_client.request_dashboard_data(User::default()).await;
 
         assert!(response.is_ok());
         assert!(
@@ -446,446 +130,5 @@ mod tests {
         );
 
         mock.assert_calls(0);
-    }
-
-    #[test]
-    fn test_should_find_first_mtb_before_mv_consent() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-04-13".to_string(),
-                care_plans: Some(vec![
-                    CarePlan {
-                        date: "2026-04-13".to_string(),
-                    },
-                    CarePlan {
-                        date: "2026-04-28".to_string(),
-                    },
-                ]),
-                findings: Some(vec![Finding {
-                    date: "2026-04-13".to_string(),
-                }]),
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert!(case.is_valid());
-        assert!(case.is_first_mtb_after_mv_consent());
-    }
-
-    #[test]
-    fn test_should_find_first_mtb_same_day_mv_consent() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-13".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-04-13".to_string(),
-                care_plans: Some(vec![
-                    CarePlan {
-                        date: "2026-04-12".to_string(),
-                    },
-                    CarePlan {
-                        date: "2026-04-14".to_string(),
-                    },
-                ]),
-                findings: Some(vec![Finding {
-                    date: "2026-04-11".to_string(),
-                }]),
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert!(case.is_valid());
-        assert!(case.is_first_mtb_after_mv_consent());
-    }
-
-    #[test]
-    fn test_should_find_first_mtb_after_mv_consent() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-03-31".to_string(),
-                care_plans: Some(vec![CarePlan {
-                    date: "2026-03-31".to_string(),
-                }]),
-                findings: None,
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert!(!case.is_valid());
-        assert!(!case.is_first_mtb_after_mv_consent());
-    }
-
-    #[test]
-    fn test_should_not_any_mtb_after_mv_consent() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-03-31".to_string(),
-                care_plans: None,
-                findings: None,
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::default(),
-            }),
-            next_follow_up_due: Some("2026-06-30".to_string()),
-        };
-
-        assert!(!case.is_valid());
-        assert!(!case.is_first_mtb_after_mv_consent());
-    }
-
-    #[test]
-    fn test_should_sort_care_plans_by_date() {
-        let care_plans = vec![
-            CarePlan {
-                date: "2026-04-13".to_string(),
-            },
-            CarePlan {
-                date: "2026-04-12".to_string(),
-            },
-        ];
-
-        let actual = sorted(care_plans).collect_vec();
-        assert_eq!(
-            actual,
-            vec![
-                CarePlan {
-                    date: "2026-04-12".to_string(),
-                },
-                CarePlan {
-                    date: "2026-04-13".to_string(),
-                },
-            ]
-        );
-    }
-
-    #[rstest]
-    #[case(
-        "testresources/test1.json",
-        Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mtb: Some(Mtb {
-                registration_date: "2026-04-14".to_string(),
-                care_plans: Some(vec![CarePlan {
-                    date: "2026-04-14".to_string(),
-                }]),
-                findings: None,
-            }),
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-14".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-14".to_string(),
-                electronic_available: true,
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-14".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            genomic_submission: Some(Submission {
-                id: "GRZ1234567".to_string(),
-                date: "2026-04-14".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        }
-    )]
-    #[case(
-        "testresources/test2.json",
-        Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mtb: None,
-            mv_consent: None,
-            broad_consent: None,
-            clinical_submission: None,
-            genomic_submission: None,
-            next_follow_up_due: None,
-        }
-    )]
-    fn test_should_deserialize_json(#[case] file_path: &str, #[case] expected: Case) {
-        let content = fs::read_to_string(file_path).expect("Could not read test file");
-        let actual = serde_json::from_str::<Case>(&content);
-
-        assert_eq!(actual.ok(), Some(expected));
-    }
-
-    #[test]
-    fn test_should_show_invalid_different_submission_types() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-04-16".to_string(),
-                care_plans: Some(vec![CarePlan {
-                    date: "2026-04-16".to_string(),
-                }]),
-                findings: None,
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-16".to_string(),
-                sequencing_type: SequencingType::Panel,
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-16".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert!(!case.is_valid());
-    }
-
-    #[rstest]
-    #[case(SequencingType::Missing, SequencingType::Missing, false)]
-    #[case(SequencingType::Missing, SequencingType::Panel, true)]
-    #[case(SequencingType::Wes, SequencingType::Missing, true)]
-    #[case(SequencingType::Panel, SequencingType::Panel, true)]
-    #[case(SequencingType::Wes, SequencingType::Wes, true)]
-    #[case(SequencingType::Wgs, SequencingType::Wgs, true)]
-    #[case(SequencingType::Panel, SequencingType::Wes, false)]
-    #[case(SequencingType::Wes, SequencingType::Wgs, false)]
-    #[case(SequencingType::Wgs, SequencingType::Panel, false)]
-    fn test_case_has_valid_submissions(
-        #[case] clinical_sequencing_type: SequencingType,
-        #[case] genomic_sequencing_type: SequencingType,
-        #[case] expected: bool,
-    ) {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-04-16".to_string(),
-                care_plans: Some(vec![CarePlan {
-                    date: "2026-04-16".to_string(),
-                }]),
-                findings: None,
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-16".to_string(),
-                sequencing_type: clinical_sequencing_type,
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-16".to_string(),
-                sequencing_type: genomic_sequencing_type,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert_eq!(case.has_valid_submissions(), expected);
-    }
-
-    #[test]
-    fn test_should_find_invalid_case_with_only_one_mtb() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-04-13".to_string(),
-                care_plans: Some(vec![CarePlan {
-                    date: "2026-04-13".to_string(),
-                }]),
-                findings: Some(vec![Finding {
-                    date: "2026-04-13".to_string(),
-                }]),
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert!(!case.is_valid());
-    }
-
-    #[test]
-    fn test_should_find_invalid_case_without_findings() {
-        let case = Case {
-            id: "H1234-26".to_string(),
-            guid: Some("TESTGUID".to_string()),
-            deceased: false,
-            deceased_at_first_mtb: false,
-            mv_consent: Some(MvConsent {
-                consent_date: "2026-04-01".to_string(),
-                sequencing: true,
-                case_identification: true,
-                re_identification: true,
-            }),
-            broad_consent: Some(BroadConsent {
-                consent_date: "2026-04-01".to_string(),
-                electronic_available: true,
-            }),
-            mtb: Some(Mtb {
-                registration_date: "2026-04-13".to_string(),
-                care_plans: Some(vec![
-                    CarePlan {
-                        date: "2026-04-13".to_string(),
-                    },
-                    CarePlan {
-                        date: "2026-04-28".to_string(),
-                    },
-                ]),
-                findings: None,
-            }),
-            clinical_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            genomic_submission: Some(Submission {
-                id: "KDK1234567".to_string(),
-                date: "2026-04-13".to_string(),
-                sequencing_type: SequencingType::Wes,
-            }),
-            next_follow_up_due: Some("2026-07-14".to_string()),
-        };
-
-        assert!(!case.is_valid());
     }
 }

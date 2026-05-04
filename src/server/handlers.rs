@@ -1,87 +1,35 @@
-use crate::api_client::Case;
-use crate::auth::{Backend, handle_login, handle_logout};
-use crate::{API_CLIENT, ASSETS};
+use crate::CONFIG;
+use crate::api_client::XApiClient;
+use crate::auth::Backend;
+use crate::dashboard::{ApiClient, Case};
 use askama::Template;
 use axum::body::Body;
 use axum::extract::Path;
 use axum::http::header::CONTENT_TYPE;
-use axum::http::{Request, StatusCode};
-use axum::middleware::{Next, from_fn};
-use axum::response::{Html, IntoResponse, Response};
-use axum::routing::get;
-use axum_login::tower_sessions::SessionManagerLayer;
-use axum_login::{AuthManagerLayerBuilder, AuthSession, login_required};
+use axum::http::{Response, StatusCode};
+use axum::response::{Html, IntoResponse};
+use axum_login::AuthSession;
+use include_dir::{Dir, include_dir};
 use itertools::Itertools;
 use log::error;
+use moka::future::Cache;
 use std::path;
-use tower_sessions::cookie::time::Duration;
-use tower_sessions::{Expiry, MemoryStore};
+use std::sync::LazyLock;
+use std::time::Duration;
 
-pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> axum::Router {
-    async fn check_ajax_auth(
-        auth: AuthSession<Backend>,
-        req: Request<Body>,
-        next: Next,
-    ) -> Response {
-        if auth.user.is_some() {
-            return next.run(req).await;
-        }
+const ASSETS: Dir = include_dir!("resources/assets");
 
-        Response::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .body("Not logged in".to_string())
-            .unwrap_or_default()
-            .into_response()
-    }
-
-    let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_name("mv-dashboard-session")
-        .with_path("/mv-dashboard")
-        .with_secure(false)
-        .with_expiry(Expiry::OnInactivity(Duration::minutes(30)))
-        .with_always_save(true);
-
-    let session_layer = if let Some(cookie_domain) = cookie_domain {
-        log::info!("Using cookie domain: {cookie_domain}");
-        session_layer.with_domain(cookie_domain.clone())
+const API_CLIENT: LazyLock<XApiClient> = LazyLock::new(|| {
+    if let Some(cache_duration) = CONFIG.cache_duration {
+        let cache = Cache::builder()
+            .max_capacity(1)
+            .time_to_live(Duration::from_secs(cache_duration.as_secs()))
+            .build();
+        XApiClient::new(&CONFIG.onkostar_url.clone(), Some(cache))
     } else {
-        session_layer
-    };
-
-    let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
-
-    let protected_routes = axum::Router::new()
-        .route("/mv-dashboard", get(handle_index_request))
-        .layer(login_required!(Backend, login_url = "/mv-dashboard/login"));
-
-    let ajax_routes = axum::Router::new()
-        .route("/mv-dashboard/cases", get(handle_cases_request))
-        .route("/mv-dashboard/followups", get(handle_followup_request))
-        .layer(from_fn(check_ajax_auth));
-
-    axum::Router::new()
-        .route(
-            "/",
-            get(|| async {
-                Response::builder()
-                    .status(StatusCode::FOUND)
-                    .header("Location", "/mv-dashboard")
-                    .body(Body::empty())
-                    .unwrap_or_default()
-                    .into_response()
-            }),
-        )
-        .route("/mv-dashboard/login", get(show_login).post(handle_login))
-        .route("/mv-dashboard/logout", get(handle_logout))
-        .route(
-            "/mv-dashboard/assets/{*path}",
-            get(|path| async { serve_asset(path) }),
-        )
-        .merge(protected_routes)
-        .merge(ajax_routes)
-        .layer(auth_layer)
-}
+        XApiClient::new(&CONFIG.onkostar_url.clone(), None)
+    }
+});
 
 #[derive(Template)]
 #[template(path = "index.html")]
@@ -127,13 +75,15 @@ impl CasesTemplate {
 struct LoginTemplate {}
 
 #[allow(clippy::expect_used)]
-async fn show_login() -> Result<impl IntoResponse, String> {
+pub(super) async fn show_login() -> Result<impl IntoResponse, String> {
     let template = LoginTemplate {};
     Ok(Html(template.render().expect("Could not render template")))
 }
 
 #[allow(clippy::expect_used)]
-async fn handle_index_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
+pub(super) async fn handle_index_request(
+    auth: AuthSession<Backend>,
+) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
     let template = IndexTemplate {
@@ -143,10 +93,12 @@ async fn handle_index_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 }
 
 #[allow(clippy::expect_used)]
-async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
+pub(super) async fn handle_cases_request(
+    auth: AuthSession<Backend>,
+) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
-    let response = match API_CLIENT.dashboard(user.clone()).await {
+    let response = match API_CLIENT.request_dashboard_data(user.clone()).await {
         Ok(data) => data,
         Err(e) => {
             error!("{e}");
@@ -165,10 +117,12 @@ async fn handle_cases_request(auth: AuthSession<Backend>) -> Result<impl IntoRes
 }
 
 #[allow(clippy::expect_used)]
-async fn handle_followup_request(auth: AuthSession<Backend>) -> Result<impl IntoResponse, String> {
+pub(super) async fn handle_followup_request(
+    auth: AuthSession<Backend>,
+) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
-    let response = match API_CLIENT.dashboard(user.clone()).await {
+    let response = match API_CLIENT.request_dashboard_data(user.clone()).await {
         Ok(data) => data,
         Err(e) => {
             error!("{e}");
@@ -197,7 +151,7 @@ async fn handle_followup_request(auth: AuthSession<Backend>) -> Result<impl Into
 }
 
 #[allow(clippy::expect_used)]
-fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
+pub(super) fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
     fn get_mimetype(path: &path::Path) -> Option<&str> {
         if let Some(extension) = path.extension() {
             return match extension.to_str() {
@@ -239,7 +193,7 @@ fn serve_asset(path: Option<Path<String>>) -> impl IntoResponse {
 #[allow(clippy::panic)]
 mod tests {
     use crate::auth::Backend;
-    use crate::routes::routes;
+    use crate::server::routes::routes;
     use axum::body::Body;
     use axum::http::{Method, Request, StatusCode};
     use httpmock::Method::GET;
