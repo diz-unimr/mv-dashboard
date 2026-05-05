@@ -17,9 +17,9 @@ use std::path;
 use std::sync::LazyLock;
 use std::time::Duration;
 
-const ASSETS: Dir = include_dir!("resources/assets");
+static ASSETS: Dir = include_dir!("resources/assets");
 
-const API_CLIENT: LazyLock<XApiClient> = LazyLock::new(|| {
+static API_CLIENT: LazyLock<XApiClient> = LazyLock::new(|| {
     if let Some(cache_duration) = CONFIG.cache_duration {
         let cache = Cache::builder()
             .max_capacity(1)
