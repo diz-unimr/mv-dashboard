@@ -12,6 +12,11 @@
           "type": "xml",
           "path": "templates/index.html",
           "xpath": "//span[@class=\"footer_version\"]"
+        },
+        {
+          "type": "xml",
+          "path": "templates/login.html",
+          "xpath": "//span[@class=\"footer_version\"]"
         }
       ]
     }

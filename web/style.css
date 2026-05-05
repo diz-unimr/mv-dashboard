@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+html {
+    overflow-y: scroll;
+}
+
+body {
+    position: relative;
+    min-height: 100vh;
+}
+
+body:after {
+    content: '';
+    display: block;
+    height: 4rem;
+}
+
 nav {
     @apply bg-gray-600 text-white p-4 flex flex-row justify-between;
     min-height: 5rem;
@@ -288,7 +303,11 @@ section.followup.invalid div.followup-details {
 }
 
 footer {
-    @apply bg-gray-600 text-white p-4 flex flex-row justify-between;
+    @apply bg-gray-600 text-white p-4;
     position: absolute;
+    width: 100%;
+    height: 4rem;
     bottom: 0;
+    align-content: center;
+    text-align: center;
 }
