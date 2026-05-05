@@ -201,7 +201,7 @@ impl Mtb {
     pub fn distinct_findings(&self) -> Option<Vec<&Finding>> {
         self.findings
             .as_ref()
-            .map(|findings| findings.iter().dedup().collect())
+            .map(|findings| findings.iter().sorted().dedup().collect())
     }
 }
 
@@ -795,5 +795,65 @@ mod tests {
         };
 
         assert!(!case.is_valid());
+    }
+
+    #[test]
+    #[allow(clippy::unwrap_used)]
+    fn test_should_find_distinct_findings() {
+        let case = Case {
+            id: "H1234-26".to_string(),
+            guid: Some("TESTGUID".to_string()),
+            onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
+            deceased: false,
+            deceased_at_first_mtb: false,
+            mv_consent: Some(MvConsent {
+                consent_date: "2026-04-01".to_string(),
+                sequencing: true,
+                case_identification: true,
+                re_identification: true,
+            }),
+            broad_consent: Some(BroadConsent {
+                consent_date: "2026-04-01".to_string(),
+                electronic_available: true,
+            }),
+            mtb: Some(Mtb {
+                registration_date: "2026-04-13".to_string(),
+                care_plans: Some(vec![
+                    CarePlan {
+                        date: "2026-04-13".to_string(),
+                    },
+                    CarePlan {
+                        date: "2026-04-28".to_string(),
+                    },
+                ]),
+                findings: Some(vec![
+                    Finding {
+                        date: "2026-04-13".to_string(),
+                    },
+                    Finding {
+                        date: "2026-05-05".to_string(),
+                    },
+                    Finding {
+                        date: "2026-04-13".to_string(),
+                    },
+                ]),
+            }),
+            clinical_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-13".to_string(),
+                sequencing_type: SequencingType::Wes,
+            }),
+            genomic_submission: Some(Submission {
+                id: "KDK1234567".to_string(),
+                date: "2026-04-13".to_string(),
+                sequencing_type: SequencingType::Wes,
+            }),
+            next_follow_up_due: Some("2026-07-14".to_string()),
+        };
+
+        let mtb = case.mtb.unwrap();
+        let actual = mtb.distinct_findings().unwrap();
+
+        assert_eq!(actual.len(), 2);
     }
 }
