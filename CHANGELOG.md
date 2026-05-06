@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.6](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.5...v0.1.6) (2026-05-06)
+
+
+### Features
+
+* show footer with version ([#22](https://github.com/diz-unimr/mv-dashboard/issues/22)) ([88da7b0](https://github.com/diz-unimr/mv-dashboard/commit/88da7b096c5675e060829249574018a51e70ca25))
+* show submission report summary ([#26](https://github.com/diz-unimr/mv-dashboard/issues/26)) ([a36363a](https://github.com/diz-unimr/mv-dashboard/commit/a36363acd5a7db3abdd4c896f8d066b56978ac56))
+
+
+### Bug Fixes
+
+* dedup() requires sorted vec for distinct results ([#25](https://github.com/diz-unimr/mv-dashboard/issues/25)) ([a015de5](https://github.com/diz-unimr/mv-dashboard/commit/a015de54c62c191b1fa513eb2d7e9367ea3df101))
+
 ## [0.1.5](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.4...v0.1.5) (2026-04-30)
 
 
