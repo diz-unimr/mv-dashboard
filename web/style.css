@@ -15,6 +15,10 @@ body:after {
     height: 4rem;
 }
 
+hr {
+    @apply my-6 border-gray-400;
+}
+
 nav {
     @apply bg-gray-600 text-white p-4 flex flex-row justify-between;
     min-height: 5rem;
@@ -135,8 +139,9 @@ select {
 
 section.case,
 section.followup,
-.case-count {
-    @apply shadow-md border-gray-300 my-6 overflow-hidden;
+.case-count,
+.submission-count {
+    @apply shadow-md border-gray-300 my-3 overflow-hidden;
     border-width: 1px;
     border-radius: .3rem;
 }
@@ -257,8 +262,9 @@ section.followup.invalid div.followup-details {
     background: repeating-linear-gradient(-45deg, var(--color-red-100), var(--color-red-100) 10px, transparent 10px, transparent 20px);
 }
 
-.case-count {
-    @apply h-16 font-bold bg-gray-100 flex flex-row;
+.case-count,
+.submission-count {
+    @apply font-bold bg-gray-100 flex flex-row;
     align-content: center;
 }
 
@@ -267,15 +273,19 @@ section.followup.invalid div.followup-details {
     align-content: center;
 }
 
-.case-count b {
+.case-count b,
+.submission-count b {
     @apply font-bold text-white bg-gray-800 px-2 py-1 rounded-lg;
 }
 
-.case-count b.valid-case-count {
+.case-count b.valid-case-count,
+.submission-count b.valid-case-count
+{
     @apply bg-green-800;
 }
 
-.case-count b.invalid-case-count {
+.case-count b.invalid-case-count,
+.submission-count b.invalid-case-count {
     @apply bg-red-800;
 }
 
@@ -285,12 +295,33 @@ section.followup.invalid div.followup-details {
 }
 
 .case-count #options > span {
-    @apply px-2;
+    @apply p-2;
     align-content: center;
 }
 
 .case-count #options button {
     @apply bg-green-800 ;
+}
+
+.submission-count {
+    @apply p-2;
+}
+
+.submission-count b {
+    @apply ml-1;
+}
+
+.submission-count li {
+    @apply list-none inline-flex;
+    align-items: center;
+}
+
+.submission-count li:after {
+    content: ",";
+}
+
+.submission-count li:last-child:after {
+    content: none;
 }
 
 .loading-indicator {

@@ -31,6 +31,13 @@ static API_CLIENT: LazyLock<XApiClient> = LazyLock::new(|| {
     }
 });
 
+struct SubmissionReport {
+    both: usize,
+    kdk_only: usize,
+    grz_only: usize,
+    missing: usize,
+}
+
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate {
@@ -67,6 +74,39 @@ impl CasesTemplate {
             .iter()
             .filter(|case| case.has_valid_case_number())
             .count()
+    }
+
+    fn submission_report(&self) -> SubmissionReport {
+        SubmissionReport {
+            both: self
+                .cases
+                .iter()
+                .filter(|case| {
+                    case.clinical_submission.is_some() && case.genomic_submission.is_some()
+                })
+                .count(),
+            kdk_only: self
+                .cases
+                .iter()
+                .filter(|case| {
+                    case.clinical_submission.is_some() && case.genomic_submission.is_none()
+                })
+                .count(),
+            grz_only: self
+                .cases
+                .iter()
+                .filter(|case| {
+                    case.clinical_submission.is_none() && case.genomic_submission.is_some()
+                })
+                .count(),
+            missing: self
+                .cases
+                .iter()
+                .filter(|case| {
+                    case.clinical_submission.is_none() && case.genomic_submission.is_none()
+                })
+                .count(),
+        }
     }
 }
 
