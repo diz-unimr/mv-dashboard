@@ -37,7 +37,8 @@
         <li>Beide Meldebestätigungen: <b class="valid-case-count">{{ submission_report().both }}</b></li>
         <li>nur KDK: <b class="invalid-case-count">{{ submission_report().kdk_only }}</b></li>
         <li>nur GRZ: <b class="invalid-case-count">{{ submission_report().grz_only }}</b></li>
-        <li>keine Meldebestätigung: <b class="invalid-case-count">{{ submission_report().missing }}</b></li>
+        <li>keine Meldebestätigung: <b class="invalid-case-count">{{ submission_report().missing_ongoing }}</b></li>
+        <li>keine Meldebestätigung (alle): <b class="invalid-case-count">{{ submission_report().missing_all }}</b></li>
     </ul>
 </div>
 
