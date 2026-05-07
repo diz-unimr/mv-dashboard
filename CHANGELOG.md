@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.7](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.6...v0.1.7) (2026-05-07)
+
+
+### Features
+
+* show prepared submission count w/o report ([#29](https://github.com/diz-unimr/mv-dashboard/issues/29)) ([e52f449](https://github.com/diz-unimr/mv-dashboard/commit/e52f4492d51da6bfbfe78b79c51f47af2b775a7f))
+
+
+### Bug Fixes
+
+* empty tags do not work in all browsers ([#27](https://github.com/diz-unimr/mv-dashboard/issues/27)) ([e51edd7](https://github.com/diz-unimr/mv-dashboard/commit/e51edd7c797434fbd2e4778b81867bd229f12b84))
+
 ## [0.1.6](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.5...v0.1.6) (2026-05-06)
 
 
