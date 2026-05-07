@@ -35,7 +35,8 @@ struct SubmissionReport {
     both: usize,
     kdk_only: usize,
     grz_only: usize,
-    missing: usize,
+    missing_ongoing: usize,
+    missing_all: usize,
 }
 
 #[derive(Template)]
@@ -99,7 +100,16 @@ impl CasesTemplate {
                     case.clinical_submission.is_none() && case.genomic_submission.is_some()
                 })
                 .count(),
-            missing: self
+            missing_ongoing: self
+                .cases
+                .iter()
+                .filter(|case| {
+                    case.has_valid_case_number()
+                        && case.clinical_submission.is_none()
+                        && case.genomic_submission.is_none()
+                })
+                .count(),
+            missing_all: self
                 .cases
                 .iter()
                 .filter(|case| {
