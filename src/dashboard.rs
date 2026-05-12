@@ -209,6 +209,8 @@ impl Mtb {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct CarePlan {
     pub(crate) date: String,
+    #[serde(rename = "type")]
+    pub(crate) mtb_type: Option<String>,
 }
 
 impl PartialOrd for CarePlan {
@@ -369,9 +371,11 @@ mod tests {
                 care_plans: Some(vec![
                     CarePlan {
                         date: "2026-04-13".to_string(),
+                        mtb_type: Some("I".to_string()),
                     },
                     CarePlan {
                         date: "2026-04-28".to_string(),
+                        mtb_type: Some("B".to_string()),
                     },
                 ]),
                 findings: Some(vec![Finding {
@@ -418,9 +422,11 @@ mod tests {
                 care_plans: Some(vec![
                     CarePlan {
                         date: "2026-04-12".to_string(),
+                        mtb_type: Some("I".to_string()),
                     },
                     CarePlan {
                         date: "2026-04-14".to_string(),
+                        mtb_type: Some("B".to_string()),
                     },
                 ]),
                 findings: Some(vec![Finding {
@@ -466,6 +472,7 @@ mod tests {
                 registration_date: "2026-03-31".to_string(),
                 care_plans: Some(vec![CarePlan {
                     date: "2026-03-31".to_string(),
+                    mtb_type: Some("I".to_string()),
                 }]),
                 findings: None,
             }),
@@ -531,9 +538,11 @@ mod tests {
         let care_plans = vec![
             CarePlan {
                 date: "2026-04-13".to_string(),
+                mtb_type: Some("B".to_string()),
             },
             CarePlan {
                 date: "2026-04-12".to_string(),
+                mtb_type: Some("I".to_string()),
             },
         ];
 
@@ -543,9 +552,11 @@ mod tests {
             vec![
                 CarePlan {
                     date: "2026-04-12".to_string(),
+                    mtb_type: Some("I".to_string()),
                 },
                 CarePlan {
                     date: "2026-04-13".to_string(),
+                    mtb_type: Some("B".to_string()),
                 },
             ]
         );
@@ -564,6 +575,7 @@ mod tests {
                 registration_date: "2026-04-14".to_string(),
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-14".to_string(),
+                    mtb_type: None,
                 }]),
                 findings: None,
             }),
@@ -635,6 +647,7 @@ mod tests {
                 registration_date: "2026-04-16".to_string(),
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-16".to_string(),
+                    mtb_type: Some("I".to_string()),
                 }]),
                 findings: None,
             }),
@@ -689,6 +702,7 @@ mod tests {
                 registration_date: "2026-04-16".to_string(),
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-16".to_string(),
+                    mtb_type: Some("I".to_string()),
                 }]),
                 findings: None,
             }),
@@ -730,6 +744,7 @@ mod tests {
                 registration_date: "2026-04-13".to_string(),
                 care_plans: Some(vec![CarePlan {
                     date: "2026-04-13".to_string(),
+                    mtb_type: Some("I".to_string()),
                 }]),
                 findings: Some(vec![Finding {
                     date: "2026-04-13".to_string(),
@@ -774,9 +789,11 @@ mod tests {
                 care_plans: Some(vec![
                     CarePlan {
                         date: "2026-04-13".to_string(),
+                        mtb_type: Some("I".to_string()),
                     },
                     CarePlan {
                         date: "2026-04-28".to_string(),
+                        mtb_type: Some("B".to_string()),
                     },
                 ]),
                 findings: None,
@@ -821,9 +838,11 @@ mod tests {
                 care_plans: Some(vec![
                     CarePlan {
                         date: "2026-04-13".to_string(),
+                        mtb_type: Some("I".to_string()),
                     },
                     CarePlan {
                         date: "2026-04-28".to_string(),
+                        mtb_type: Some("B".to_string()),
                     },
                 ]),
                 findings: Some(vec![
