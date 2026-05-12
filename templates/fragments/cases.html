@@ -133,7 +133,13 @@
                     <ul>
                         {% for plan in care_plans %}
                         <li>
+                            {% if plan.mtb_type == Some("I".to_string()) %}
+                            <b>Indikations</b>-MTB am
+                            {% else if plan.mtb_type == Some("B".to_string()) %}
+                            <b>Befund</b>-MTB am
+                            {% else %}
                             MTB am
+                            {% endif %}
                             <time datetime="{{ plan.date }}">{{ plan.date }}</time>
                         </li>
                         {% endfor %}
@@ -151,7 +157,7 @@
                     <ul>
                         {% for finding in findings %}
                         <li>
-                            MTB am
+                            Befund vom
                             <time datetime="{{ finding.date }}">{{ finding.date }}</time>
                         </li>
                         {% endfor %}
