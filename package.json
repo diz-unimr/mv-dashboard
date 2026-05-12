@@ -4,6 +4,7 @@
   "description": "",
   "dependencies": {
     "htmx.org": "~2.0.8",
+    "echarts": "~6.0.0",
     "tailwindcss": "~4.2.2"
   },
   "devDependencies": {

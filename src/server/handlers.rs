@@ -13,6 +13,7 @@ use include_dir::{Dir, include_dir};
 use itertools::Itertools;
 use log::error;
 use moka::future::Cache;
+use serde_json::json;
 use std::path;
 use std::sync::LazyLock;
 use std::time::Duration;
@@ -117,6 +118,26 @@ impl CasesTemplate {
                 })
                 .count(),
         }
+    }
+
+    fn json_data(&self) -> String {
+        let data = json!({
+            "cases": {
+                "case_count": self.case_count(),
+                "hnumber_case_count": self.hnummer_case_count(),
+                "valid_case_count": self.valid_case_count(),
+                "invalid_case_count": self.invalid_case_count()
+            },
+            "submission_reports": {
+                "both": self.submission_report().both,
+                "kdk_only": self.submission_report().kdk_only,
+                "grz_only": self.submission_report().grz_only,
+                "missing_ongoing": self.submission_report().missing_ongoing,
+                "missing_all": self.submission_report().missing_all,
+            }
+        });
+
+        serde_json::to_string(&data).unwrap_or_default()
     }
 }
 

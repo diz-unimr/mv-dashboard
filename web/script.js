@@ -1,6 +1,19 @@
 import * as styles from './style.css';
 import 'htmx.org'
 
+import * as echarts from 'echarts/core';
+import { PieChart } from 'echarts/charts';
+import { SVGRenderer } from 'echarts/renderers';
+import {
+    TooltipComponent
+} from 'echarts/components';
+
+echarts.use([
+    PieChart,
+    TooltipComponent,
+    SVGRenderer
+]);
+
 const dateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 const dateTimeFormat = new Intl.DateTimeFormat('de-DE', dateTimeFormatOptions);
 
@@ -29,6 +42,7 @@ window.addEventListener('load', () => {
 window.addEventListener('htmx:afterRequest', () => {
     formatTimeElements();
     openAllCasesCheckbox();
+    showCasesDiagram();
 });
 
 window.addEventListener('htmx:responseError', (event) => {
@@ -65,4 +79,67 @@ export function openAllCases(value) {
             details.removeAttribute('open');
         });
     }
+}
+
+export function showCasesDiagram() {
+    let elem = document.getElementById('cases-graph');
+    let data = JSON.parse(elem.dataset.value);
+
+    if (!data) {
+        return;
+    }
+
+    console.log(data);
+
+    let chart = echarts.init(elem, null, {renderer: 'svg'});
+
+    let option = {
+        tooltip: {
+            trigger: 'item'
+        },
+        title: false,
+        series: [
+            {
+                type: 'pie',
+                radius: ['72%', '80%'],
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                data: [
+                    { name: 'Mit H-Nummer', value: data.cases['hnumber_case_count'], itemStyle: { color: '#555' } },
+                    { name: 'Ohne H-Nummer', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
+                ],
+            },
+            {
+                type: 'pie',
+                radius: ['46%', '70%'],
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                data: [
+                    { name: 'Abgeschlossen', value: data.cases['valid_case_count'], itemStyle: { color: '#016630' } },
+                    { name: 'Offen', value: data.cases['invalid_case_count'], itemStyle: { color: '#9f0712' } }
+                ],
+            },
+            {
+                type: 'pie',
+                radius: ['24%', '44%'],
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                data: [
+                    { name: 'Beide Meldebestätigungen', value: data.submission_reports['both'], itemStyle: { color: '#016630' } },
+                    { name: 'Meldebestätigung nur vom KDK', value: data.submission_reports['kdk_only'], itemStyle: { color: '#d08700' } },
+                    { name: 'Meldebestätigung nur vom GRZ', value: data.submission_reports['grz_only'], itemStyle: { color: '#d08700' } },
+                    { name: 'Keine Meldebestätigung', value: data.submission_reports['missing_ongoing'], itemStyle: { color: '#9f0712' } },
+                    { name: 'Ohne H-Nummer', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
+                ],
+            }
+        ]
+    }
+
+    option && chart.setOption(option);
 }
