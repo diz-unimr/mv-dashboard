@@ -67,10 +67,6 @@ h1 {
     @apply text-3xl font-bold;
 }
 
-ul > li {
-    @apply list-disc list-inside;
-}
-
 time {
     @apply font-mono font-bold underline;
 }
@@ -264,7 +260,7 @@ section.followup.invalid div.followup-details {
 
 .case-count,
 .submission-count {
-    @apply font-bold bg-gray-100 flex flex-row;
+    @apply font-bold bg-gray-100;
     align-content: center;
 }
 
@@ -282,6 +278,11 @@ section.followup.invalid div.followup-details {
 .submission-count b.valid-case-count
 {
     @apply bg-green-800;
+}
+
+.case-count b.warning-case-count,
+.submission-count b.warning-case-count {
+    @apply bg-yellow-600;
 }
 
 .case-count b.invalid-case-count,
@@ -312,12 +313,8 @@ section.followup.invalid div.followup-details {
 }
 
 .submission-count li {
-    @apply list-none inline-flex;
+    @apply my-2;
     align-items: center;
-}
-
-.submission-count li:after {
-    content: ",";
 }
 
 .submission-count li:last-child:after {

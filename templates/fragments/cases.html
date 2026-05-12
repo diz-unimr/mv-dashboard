@@ -7,39 +7,51 @@
 
 {% if cases.len() > 0 %}
 
-<div class="case-count">
-    <span>
-        <span class="summary-block">
-            Es gibt <b>{{ case_count() }}</b> Fälle in Onkostar.
-            Davon abgeschlossen: <b class="valid-case-count">{{ valid_case_count() }}</b>,
-            noch offen: <b class="invalid-case-count">{{ invalid_case_count() }}</b>.
-        </span>
-    </span>
-    <span id="options">
-        <span>
-            <select id="visibility" onchange="window.changeVisibility(this.value)">
-                <option value="all">Alle Fälle anzeigen ({{ case_count() }})</option>
-                <option value="open">Nur offene Fälle anzeigen ({{ invalid_case_count() }})</option>
-                <option value="withh">Nur Fälle mit H-Nummer anzeigen ({{ hnummer_case_count() }})</option>
-            </select>
-        </span>
-        <span>
-            <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
-            <label for="openAllCases">Alle Fälle ausklappen</label>
-        </span>
-        <span>
-            <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
-        </span>
-    </span>
-</div>
-<div class="submission-count">
-    <ul>
-        <li>Beide Meldebestätigungen: <b class="valid-case-count">{{ submission_report().both }}</b></li>
-        <li>nur KDK: <b class="invalid-case-count">{{ submission_report().kdk_only }}</b></li>
-        <li>nur GRZ: <b class="invalid-case-count">{{ submission_report().grz_only }}</b></li>
-        <li>keine Meldebestätigung: <b class="invalid-case-count">{{ submission_report().missing_ongoing }}</b></li>
-        <li>keine Meldebestätigung (alle): <b class="invalid-case-count">{{ submission_report().missing_all }}</b></li>
-    </ul>
+<div style="display: grid; grid-template-columns: 1fr 3fr;">
+    <div id="cases-graph" data-value='{{ json_data() }}'>
+        <!-- graph will be loaded here -->
+    </div>
+    <div>
+        <div class="case-count">
+            <span id="options">
+                <span>
+                    <select id="visibility" onchange="window.changeVisibility(this.value)">
+                        <option value="all">Alle Fälle anzeigen ({{ case_count() }})</option>
+                        <option value="open">Nur offene Fälle anzeigen ({{ invalid_case_count() }})</option>
+                        <option value="withh">Nur Fälle mit H-Nummer anzeigen ({{ hnummer_case_count() }})</option>
+                    </select>
+                </span>
+                <span>
+                    <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
+                    <label for="openAllCases">Alle Fälle ausklappen</label>
+                </span>
+                <span>
+                    <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
+                </span>
+            </span>
+        </div>
+        <div class="submission-count">
+            <div>
+                <span>
+                    <span class="summary-block">
+                        Von <b>{{ case_count() }}</b> Fällen in Onkostar
+                        sind <b class="valid-case-count">{{ valid_case_count() }}</b> abgeschlossen,
+                        noch offen sind <b class="invalid-case-count">{{ invalid_case_count() }}</b> Fälle.
+                    </span>
+                </span>
+            </div>
+            <hr/>
+            <div>
+                <ul>
+                    <li>Beide Meldebestätigungen: <b class="valid-case-count">{{ submission_report().both }}</b></li>
+                    <li>Meldebestätigung nur vom KDK: <b class="warning-case-count">{{ submission_report().kdk_only }}</b></li>
+                    <li>Meldebestätigung nur vom GRZ: <b class="warning-case-count">{{ submission_report().grz_only }}</b></li>
+                    <li>keine Meldebestätigung: <b class="invalid-case-count">{{ submission_report().missing_ongoing }}</b></li>
+                    <li>keine Meldebestätigung (alle): <b class="invalid-case-count">{{ submission_report().missing_all }}</b></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
 <hr/>
