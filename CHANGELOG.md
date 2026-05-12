@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.7...v0.1.8) (2026-05-12)
+
+
+### Features
+
+* no request timeout in api client ([cec5fd2](https://github.com/diz-unimr/mv-dashboard/commit/cec5fd200a80a3e03b1340cc36fbbbb05774e173))
+* show mtb type if available ([#31](https://github.com/diz-unimr/mv-dashboard/issues/31)) ([71de0aa](https://github.com/diz-unimr/mv-dashboard/commit/71de0aa004bdd4a5ca2e2ca869b7d972c24269d7))
+
 ## [0.1.7](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.6...v0.1.7) (2026-05-07)
 
 
