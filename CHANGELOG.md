@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.0](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.8...v0.2.0) (2026-05-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* show graph for cases ans submissions ([#32](https://github.com/diz-unimr/mv-dashboard/issues/32))
+
+### Features
+
+* show graph for cases ans submissions ([#32](https://github.com/diz-unimr/mv-dashboard/issues/32)) ([65509a5](https://github.com/diz-unimr/mv-dashboard/commit/65509a5d33d75fdc5090b5ce0e72c82940a29e81))
+* show latest MV consent date ([#34](https://github.com/diz-unimr/mv-dashboard/issues/34)) ([0cbad14](https://github.com/diz-unimr/mv-dashboard/commit/0cbad1407f62cf81606d96ab658af41af3447b4a))
+
+
+### Bug Fixes
+
+* typo in html template ([602e1b3](https://github.com/diz-unimr/mv-dashboard/commit/602e1b3fc5a2b5cdeb12133be6088b02caaec743))
+
 ## [0.1.8](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.7...v0.1.8) (2026-05-12)
 
 
