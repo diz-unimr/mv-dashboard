@@ -40,6 +40,28 @@
                     </span>
                 </span>
             </div>
+            {% if let Some(latest_mv_consent) = latest_mv_consent() %}
+            <hr/>
+            <div>
+                Letzte Teilnameerklärung MVH:
+                <ul>
+                    <li>
+                        <time datetime="{{ latest_mv_consent.date }}">{{ latest_mv_consent.date }}</time>
+                        - von allen Fällen.
+                        {% if latest_mv_consent.days_past > 14 %}
+                        <b class="invalid-case-count">vor {{ latest_mv_consent.days_past }} Tagen</b>
+                        {% endif %}
+                    </li>
+                    <li>
+                        <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
+                        - Fälle mit H-Nummer.
+                        {% if latest_mv_consent.hnummer_days_past > 14 %}
+                        <b class="invalid-case-count">vor {{ latest_mv_consent.hnummer_days_past }} Tagen</b>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
             <hr/>
             <div>
                 <ul>
