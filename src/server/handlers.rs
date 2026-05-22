@@ -9,11 +9,13 @@ use axum::http::header::CONTENT_TYPE;
 use axum::http::{Response, StatusCode};
 use axum::response::{Html, IntoResponse};
 use axum_login::AuthSession;
+use chrono::Utc;
 use include_dir::{Dir, include_dir};
 use itertools::Itertools;
 use log::error;
 use moka::future::Cache;
 use serde_json::json;
+use std::ops::{Add, Sub};
 use std::path;
 use std::sync::LazyLock;
 use std::time::Duration;
@@ -32,6 +34,13 @@ static API_CLIENT: LazyLock<XApiClient> = LazyLock::new(|| {
     }
 });
 
+struct LatestMvConsent {
+    days_past: i64,
+    date: String,
+    hnummer_days_past: i64,
+    hnummer_date: String,
+}
+
 struct SubmissionReport {
     both: usize,
     kdk_only: usize,
@@ -49,12 +58,6 @@ struct IndexTemplate {
 #[derive(Template)]
 #[template(path = "fragments/cases.html")]
 struct CasesTemplate {
-    cases: Vec<Case>,
-}
-
-#[derive(Template)]
-#[template(path = "fragments/followup.html")]
-struct FollowUpTemplate {
     cases: Vec<Case>,
 }
 
@@ -139,6 +142,64 @@ impl CasesTemplate {
 
         serde_json::to_string(&data).unwrap_or_default()
     }
+
+    fn latest_mv_consent(&self) -> Option<LatestMvConsent> {
+        if self.cases.is_empty() {
+            return None;
+        }
+
+        let latest = self
+            .cases
+            .iter()
+            .filter_map(|case| case.clone().mv_consent)
+            .filter_map(|mv_consent| {
+                chrono::NaiveDate::parse_from_str(&mv_consent.consent_date, "%Y-%m-%d").ok()
+            })
+            .sorted()
+            .last();
+
+        let hnummer_latest = self
+            .cases
+            .iter()
+            .filter(|case| case.has_valid_case_number())
+            .filter_map(|case| case.clone().mv_consent)
+            .filter_map(|mv_consent| {
+                chrono::NaiveDate::parse_from_str(&mv_consent.consent_date, "%Y-%m-%d").ok()
+            })
+            .sorted()
+            .last();
+
+        Some(LatestMvConsent {
+            days_past: match latest {
+                Some(date) => Utc::now()
+                    .date_naive()
+                    .signed_duration_since(date)
+                    .num_days(),
+                None => 0,
+            },
+            date: match latest {
+                Some(date) => date.to_string(),
+                None => String::new(),
+            },
+            hnummer_days_past: match hnummer_latest {
+                Some(date) => Utc::now()
+                    .date_naive()
+                    .signed_duration_since(date)
+                    .num_days(),
+                None => 0,
+            },
+            hnummer_date: match hnummer_latest {
+                Some(date) => date.to_string(),
+                None => String::new(),
+            },
+        })
+    }
+}
+
+#[derive(Template)]
+#[template(path = "fragments/followup.html")]
+struct FollowUpTemplate {
+    cases: Vec<Case>,
 }
 
 #[derive(Template)]
