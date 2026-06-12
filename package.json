@@ -5,13 +5,13 @@
   "dependencies": {
     "htmx.org": "~2.0.8",
     "echarts": "~6.1.0",
-    "tailwindcss": "~4.2.2"
+    "tailwindcss": "~4.3.0"
   },
   "devDependencies": {
     "@rspack/cli": "^2.0.2",
     "@rspack/core": "^2.0.2",
-    "@tailwindcss/cli": "~4.2.2",
-    "@tailwindcss/postcss": "~4.2.2",
+    "@tailwindcss/cli": "~4.3.0",
+    "@tailwindcss/postcss": "~4.3.0",
     "autoprefixer": "~10.5.0",
     "postcss": "~8.5.9",
     "postcss-loader": "~8.2.1"
