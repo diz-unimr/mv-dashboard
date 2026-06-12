@@ -2,7 +2,7 @@
 <h1>MVH-Dashboard - Fälle</h1>
 
 <p>
-    Aufgeführt sind alle Fälle aus Onkostar, sortiert nach H-Nummer.
+    Aufgeführt sind alle Fälle aus Onkostar, sortiert nach Fallnummer.
 </p>
 
 {% if cases.len() > 0 %}
@@ -16,9 +16,9 @@
             <span id="options">
                 <span>
                     <select id="visibility" onchange="window.changeVisibility(this.value)">
-                        <option value="all">Alle Fälle anzeigen ({{ case_count() }})</option>
+                        <option value="withh">Fälle mit Fallnummer anzeigen ({{ hnummer_case_count() }})</option>
                         <option value="open">Nur offene Fälle anzeigen ({{ invalid_case_count() }})</option>
-                        <option value="withh">Nur Fälle mit H-Nummer anzeigen ({{ hnummer_case_count() }})</option>
+                        <option value="all">Alles anzeigen ({{ case_count() }})</option>
                     </select>
                 </span>
                 <span>
@@ -34,9 +34,10 @@
             <div>
                 <span>
                     <span class="summary-block">
-                        Von <b>{{ case_count() }}</b> Fällen in Onkostar
+                        Von <b>{{ hnummer_case_count() }}</b> Fällen in Onkostar
                         sind <b class="valid-case-count">{{ valid_case_count() }}</b> abgeschlossen,
-                        noch offen sind <b class="invalid-case-count">{{ invalid_case_count() }}</b> Fälle.
+                        noch offen sind <b class="invalid-case-count">{{ submission_report().missing_ongoing + submission_report().kdk_only + submission_report().grz_only }}</b> Fälle.
+                        Zusätzlich aufgeklärte Patienten: <b>{{ submission_report().missing_all - submission_report().missing_ongoing }}</b>
                     </span>
                 </span>
             </div>
@@ -46,17 +47,17 @@
                 Letzte Teilnahmeerklärung MVH:
                 <ul>
                     <li>
-                        <time datetime="{{ latest_mv_consent.date }}">{{ latest_mv_consent.date }}</time>
-                        - von allen Fällen.
-                        {% if latest_mv_consent.days_past > 14 %}
-                        <b class="invalid-case-count">vor {{ latest_mv_consent.days_past }} Tagen</b>
+                        <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
+                        - Fälle mit Fallnummer.
+                        {% if latest_mv_consent.hnummer_days_past > 14 %}
+                        <b class="invalid-case-count">vor {{ latest_mv_consent.hnummer_days_past }} Tagen</b>
                         {% endif %}
                     </li>
                     <li>
-                        <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
-                        - Fälle mit H-Nummer.
-                        {% if latest_mv_consent.hnummer_days_past > 14 %}
-                        <b class="invalid-case-count">vor {{ latest_mv_consent.hnummer_days_past }} Tagen</b>
+                        <time datetime="{{ latest_mv_consent.date }}">{{ latest_mv_consent.date }}</time>
+                        - mit MV-Aufklärung.
+                        {% if latest_mv_consent.days_past > 14 %}
+                        <b class="invalid-case-count">vor {{ latest_mv_consent.days_past }} Tagen</b>
                         {% endif %}
                     </li>
                 </ul>
@@ -69,7 +70,6 @@
                     <li>Meldebestätigung nur vom KDK: <b class="warning-case-count">{{ submission_report().kdk_only }}</b></li>
                     <li>Meldebestätigung nur vom GRZ: <b class="warning-case-count">{{ submission_report().grz_only }}</b></li>
                     <li>keine Meldebestätigung: <b class="invalid-case-count">{{ submission_report().missing_ongoing }}</b></li>
-                    <li>keine Meldebestätigung (alle): <b class="invalid-case-count">{{ submission_report().missing_all }}</b></li>
                 </ul>
             </div>
         </div>
@@ -83,7 +83,7 @@
         {% if case.is_valid() %}
         class="case valid"
         {% else %}
-        {% if case.has_valid_case_number() %} class="case invalid" {% else %} class="case invalid noh" {% endif %}
+        {% if case.has_valid_case_number() %} class="case invalid" {% else %} class="case invalid noh" style="display: none" {% endif %}
         {% endif %}>
     <details {% if !case.is_valid() %} open {% endif %}>
         <summary>
@@ -204,7 +204,7 @@
                 </div>
                 {% endwhen %}
                 {% when None %}
-                <p class="invalid-part">Kein MTB mit H-Nummer</p>
+                <p class="invalid-part">Kein MTB mit Fallnummer</p>
                 {% endwhen %}
                 {% endmatch %}
             </div>

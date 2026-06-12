@@ -40,12 +40,17 @@ pub(crate) struct Case {
 impl Case {
     #[allow(clippy::expect_used)]
     pub fn formatted_case_id(&self) -> String {
-        let re = Regex::new(r"^H(?<number>\d+)-(?<year>\d{2})$").expect("Invalid regex pattern");
+        let re = Regex::new(r"^(?<art>[IUH])(?<number>\d+)-(?<year>\d{2})$")
+            .expect("Invalid regex pattern");
 
         let Some(caps) = re.captures(&self.id) else {
             return self.id.clone();
         };
 
+        let art = match caps.name("art") {
+            Some(kennung) => kennung.as_str(),
+            None => return self.id.clone(),
+        };
         let number = match caps.name("number") {
             Some(number) => number.as_str(),
             None => return self.id.clone(),
@@ -55,7 +60,7 @@ impl Case {
             None => return self.id.clone(),
         };
 
-        format!("H/20{year}/{number}")
+        format!("{art}/20{year}/{number}")
     }
 
     pub fn has_valid_submissions(&self) -> bool {
