@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.1](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.0...v0.2.1) (2026-06-12)
+
+
+### Features
+
+* show state by case id ([#43](https://github.com/diz-unimr/mv-dashboard/issues/43)) ([9dcc7e9](https://github.com/diz-unimr/mv-dashboard/commit/9dcc7e925119d8ad31813d258afa34983fccb820))
+* use case ids not only H-Nummer ([#42](https://github.com/diz-unimr/mv-dashboard/issues/42)) ([91b1ae8](https://github.com/diz-unimr/mv-dashboard/commit/91b1ae8353cb05d2dfbde25c460145da2977f428))
+
+
+### Bug Fixes
+
+* **deps:** update dependency echarts to ~6.1.0 ([#37](https://github.com/diz-unimr/mv-dashboard/issues/37)) ([2910560](https://github.com/diz-unimr/mv-dashboard/commit/2910560c45038b7712bb32ee586a60cfb281894d))
+* **deps:** update tailwindcss monorepo to ~4.3.0 ([#38](https://github.com/diz-unimr/mv-dashboard/issues/38)) ([b23a15e](https://github.com/diz-unimr/mv-dashboard/commit/b23a15eae65d560d1a623bb5fa62ab73062bab53))
+
 ## [0.2.0](https://github.com/diz-unimr/mv-dashboard/compare/v0.1.8...v0.2.0) (2026-05-22)
 
 
