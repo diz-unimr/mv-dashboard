@@ -89,6 +89,16 @@
         <summary>
             {% if case.is_valid() %} ✅ {% else %} 😱 {% endif %}
             <span>{{ case.formatted_case_id() }}</span>
+            {% match case.case_state() %}
+            {% when CaseState::ConsentGiven %}
+            <span class="case-state">Aufgeklärt</span>
+            {% when CaseState::IndicationDiscussed %}
+            <span class="case-state">Indikation besprochen</span>
+            {% when CaseState::SequencingRequested %}
+            <span class="case-state">Sequenzierung angefordert</span>
+            {% when CaseState::SequencingDone %}
+            <span class="case-state">Sequenzierung abgeschlossen</span>
+            {% endmatch %}
             {% if case.deceased %}
             <span class="deceased">✝️ Patient verstorben</span>
             {% endif %}

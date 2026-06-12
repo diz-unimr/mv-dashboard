@@ -61,7 +61,8 @@ where
             .map(|case| case.with_onkostar_url(&self.base_url))
             .collect_vec();
 
-        cases.sort_unstable_by_key(Case::formatted_case_id);
+        cases.sort_by_key(Case::formatted_case_id);
+        cases.sort_by_key(Case::case_state);
 
         if let Some(cache) = &self.cache {
             cache.insert("dashboard".to_string(), cases.clone()).await;
