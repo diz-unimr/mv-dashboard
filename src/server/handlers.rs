@@ -1,7 +1,7 @@
 use crate::CONFIG;
 use crate::api_client::XApiClient;
 use crate::auth::Backend;
-use crate::dashboard::{ApiClient, Case};
+use crate::dashboard::{ApiClient, Case, CaseState};
 use askama::Template;
 use axum::body::Body;
 use axum::extract::Path;
