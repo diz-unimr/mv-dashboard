@@ -17,6 +17,14 @@ pub(crate) struct DashboardData {
     pub(crate) cases: Vec<Case>,
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum CaseState {
+    ConsentGiven,
+    IndicationDiscussed,
+    SequencingRequested,
+    SequencingDone,
+}
+
 #[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Case {
@@ -61,6 +69,18 @@ impl Case {
         };
 
         format!("{art}/20{year}/{number}")
+    }
+
+    pub fn case_state(&self) -> CaseState {
+        if self.formatted_case_id().starts_with('I') {
+            CaseState::IndicationDiscussed
+        } else if self.formatted_case_id().starts_with('U') {
+            CaseState::SequencingRequested
+        } else if self.formatted_case_id().starts_with('H') {
+            CaseState::SequencingDone
+        } else {
+            CaseState::ConsentGiven
+        }
     }
 
     pub fn has_valid_submissions(&self) -> bool {
