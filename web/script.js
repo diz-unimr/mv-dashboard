@@ -62,6 +62,9 @@ export function changeVisibility(value) {
         Array.from(document.querySelectorAll('section.case.valid')).forEach((section) => {
             section.style.display = 'none';
         });
+        Array.from(document.querySelectorAll('section.case.noh')).forEach((section) => {
+            section.style.display = 'none';
+        })
     } else if (value === 'withh') {
         Array.from(document.querySelectorAll('section.case.noh')).forEach((section) => {
             section.style.display = 'none';
@@ -107,25 +110,13 @@ export function showCasesDiagram() {
                     position: 'center'
                 },
                 data: [
-                    { name: 'Mit H-Nummer', value: data.cases['hnumber_case_count'], itemStyle: { color: '#555' } },
-                    { name: 'Ohne H-Nummer', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
+                    { name: 'Mit Fallnummer', value: data.cases['hnumber_case_count'], itemStyle: { color: '#555' } },
+                    { name: 'Ohne Fallnummer (aber aufgeklärt)', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
                 ],
             },
             {
                 type: 'pie',
-                radius: ['46%', '70%'],
-                label: {
-                    show: false,
-                    position: 'center'
-                },
-                data: [
-                    { name: 'Abgeschlossen', value: data.cases['valid_case_count'], itemStyle: { color: '#016630' } },
-                    { name: 'Offen', value: data.cases['invalid_case_count'], itemStyle: { color: '#9f0712' } }
-                ],
-            },
-            {
-                type: 'pie',
-                radius: ['24%', '44%'],
+                radius: ['40%', '70%'],
                 label: {
                     show: false,
                     position: 'center'
@@ -135,7 +126,7 @@ export function showCasesDiagram() {
                     { name: 'Meldebestätigung nur vom KDK', value: data.submission_reports['kdk_only'], itemStyle: { color: '#d08700' } },
                     { name: 'Meldebestätigung nur vom GRZ', value: data.submission_reports['grz_only'], itemStyle: { color: '#d08700' } },
                     { name: 'Keine Meldebestätigung', value: data.submission_reports['missing_ongoing'], itemStyle: { color: '#9f0712' } },
-                    { name: 'Ohne H-Nummer', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
+                    { name: 'Ohne Fallnummer (aber aufgeklärt)', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
                 ],
             }
         ]
