@@ -7,31 +7,14 @@
 
 {% if cases.len() > 0 %}
 
-<div style="display: grid; grid-template-columns: 1fr 3fr;">
-    <div id="cases-graph" data-value='{{ json_data() }}'>
-        <!-- graph will be loaded here -->
-    </div>
-    <div>
-        <div class="case-count">
-            <span id="options">
-                <span>
-                    <select id="visibility" onchange="window.changeVisibility(this.value)">
-                        <option value="withh">Fälle mit Fallnummer anzeigen ({{ hnummer_case_count() }})</option>
-                        <option value="open">Nur offene Fälle anzeigen ({{ invalid_case_count() }})</option>
-                        <option value="all">Alles anzeigen ({{ case_count() }})</option>
-                    </select>
-                </span>
-                <span>
-                    <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
-                    <label for="openAllCases">Alle Fälle ausklappen</label>
-                </span>
-                <span>
-                    <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
-                </span>
-            </span>
+
+<div class="submission-count">
+    <h3>Stand der Fallbearbeitung</h3>
+    <div style="display: grid; grid-template-columns: 1fr 4fr;">
+        <div id="cases-graph" data-value='{{ json_data() }}'>
+            <!-- graph will be loaded here -->
         </div>
-        <div class="submission-count">
-            <h3>Stand der Fallbearbeitung</h3>
+        <div>
             <div class="statistics-main">
                 <div class="statistics-card all">
                     <div class="statistics-card-value">{{ hnummer_case_count() }}</div>
@@ -64,39 +47,54 @@
                     <div class="statistics-card-label">Keine Meldebestätigung</div>
                 </div>
             </div>
-            {% if let Some(latest_mv_consent) = latest_mv_consent() %}
-            <hr/>
-            <h3>Letzte Teilnahmeerklärung MVH</h3>
-            <div class="statistics-consent">
-                <div class="statistics-card">
-                    <div class="statistics-card-value">
-                        <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
-                    </div>
-                    <div class="statistics-card-label">
-                        Fälle mit Fallnummer
-                        {% if latest_mv_consent.hnummer_days_past > 14 %}
-                        <b class="invalid-case-count">vor {{ latest_mv_consent.hnummer_days_past }} Tagen</b>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="statistics-card">
-                    <div class="statistics-card-value">
-                        <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
-                    </div>
-                    <div class="statistics-card-label">
-                        Fälle mit MV-Aufklärung
-                        {% if latest_mv_consent.days_past > 14 %}
-                        <b class="invalid-case-count">vor {{ latest_mv_consent.days_past }} Tagen</b>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
+    {% if let Some(latest_mv_consent) = latest_mv_consent() %}
+    <hr/>
+    <h3>Letzte Teilnahmeerklärung MVH</h3>
+    <div class="statistics-consent">
+        <div class="statistics-card">
+            <div class="statistics-card-value">
+                <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
+            </div>
+            <div class="statistics-card-label">
+                Fälle mit Fallnummer
+                {% if latest_mv_consent.hnummer_days_past > 14 %}
+                <b class="no-consent-days">vor {{ latest_mv_consent.hnummer_days_past }} Tagen</b>
+                {% endif %}
+            </div>
+        </div>
+        <div class="statistics-card">
+            <div class="statistics-card-value">
+                <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
+            </div>
+            <div class="statistics-card-label">
+                Fälle mit MV-Aufklärung
+                {% if latest_mv_consent.days_past > 14 %}
+                <b class="no-consent-days">vor {{ latest_mv_consent.days_past }} Tagen</b>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
-<hr/>
+<div id="case-list">
+    <select id="visibility" onchange="window.changeVisibility(this.value)">
+        <option value="withh">Fälle mit Fallnummer ({{ hnummer_case_count() }})</option>
+        <option value="open">Offene Fälle ({{ invalid_case_count() }})</option>
+        <option value="all">Alle aufgeklärten Patienten ({{ case_count() }})</option>
+    </select>
+    <div id="options">
+        <span>
+            <input id="openAllCases" type="checkbox" onchange="window.openAllCases(this.checked)" />
+            <label for="openAllCases">Alle Fälle ausklappen</label>
+        </span>
+        <span>
+            <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
+        </span>
+    </div>
+</div>
 
 {% for case in cases %}
 <section
