@@ -110,7 +110,7 @@ export function showCasesDiagram() {
                     position: 'center'
                 },
                 data: [
-                    { name: 'Mit Fallnummer', value: data.cases['hnumber_case_count'], itemStyle: { color: '#555' } },
+                    { name: 'Mit Fallnummer', value: data.cases['hnumber_case_count'], itemStyle: { color: '#4a5565' } },
                     { name: 'Ohne Fallnummer (aber aufgeklärt)', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
                 ],
             },

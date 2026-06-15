@@ -259,6 +259,62 @@ section.followup.invalid div.followup-details {
     background: repeating-linear-gradient(-45deg, var(--color-red-100), var(--color-red-100) 10px, transparent 10px, transparent 20px);
 }
 
+.statistics-main {
+    @apply grid grid-cols-3 gap-2 text-lg font-normal my-2;
+}
+
+.statistics-more {
+    @apply grid grid-cols-4 gap-2 font-normal my-2;
+}
+
+.statistics-consent {
+    @apply grid grid-cols-2 gap-2 font-normal my-2;
+}
+
+.statistics-consent .statistics-card {
+    @apply bg-gray-200;
+}
+
+.statistics-card {
+    @apply rounded-sm text-center py-2;
+}
+
+.statistics-main .statistics-card-value {
+    @apply text-5xl font-bold;
+}
+
+.statistics-more .statistics-card-value {
+    @apply text-4xl font-bold;
+}
+
+.statistics-consent .statistics-card-value {
+    @apply text-3xl font-bold text-gray-800 my-1;
+}
+
+.statistics-card-value {
+    @apply text-white
+}
+
+.statistics-card.all {
+    @apply bg-gray-600 text-gray-100;
+}
+
+.statistics-card.success {
+    @apply bg-green-800 text-green-100;
+}
+
+.statistics-card.warning {
+    @apply bg-yellow-600 text-yellow-100;
+}
+
+.statistics-card.error {
+    @apply bg-red-800 text-red-100;
+}
+
+.submission-count h3 {
+    @apply font-bold text-xl;
+}
+
 .case-count,
 .submission-count {
     @apply font-bold bg-gray-100;

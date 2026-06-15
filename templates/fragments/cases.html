@@ -31,47 +31,67 @@
             </span>
         </div>
         <div class="submission-count">
-            <div>
-                <span>
-                    <span class="summary-block">
-                        Von <b>{{ hnummer_case_count() }}</b> Fällen in Onkostar
-                        sind <b class="valid-case-count">{{ valid_case_count() }}</b> abgeschlossen,
-                        noch offen sind <b class="invalid-case-count">{{ submission_report().missing_ongoing + submission_report().kdk_only + submission_report().grz_only }}</b> Fälle.
-                        Zusätzlich aufgeklärte Patienten: <b>{{ submission_report().missing_all - submission_report().missing_ongoing }}</b>
-                    </span>
-                </span>
+            <h3>Stand der Fallbearbeitung</h3>
+            <div class="statistics-main">
+                <div class="statistics-card all">
+                    <div class="statistics-card-value">{{ hnummer_case_count() }}</div>
+                    <div class="statistics-card-label">Fälle insgesamt</div>
+                </div>
+                <div class="statistics-card success">
+                    <div class="statistics-card-value">{{ valid_case_count() }}</div>
+                    <div class="statistics-card-label">Fälle abgeschlossen</div>
+                </div>
+                <div class="statistics-card error">
+                    <div class="statistics-card-value">{{ submission_report().missing_ongoing + submission_report().kdk_only + submission_report().grz_only }}</div>
+                    <div class="statistics-card-label">Fälle noch offen</div>
+                </div>
+            </div>
+            <div class="statistics-more">
+                <div class="statistics-card success">
+                    <div class="statistics-card-value">{{ submission_report().both }}</div>
+                    <div class="statistics-card-label">Beide Meldebestätigungen</div>
+                </div>
+                <div class="statistics-card warning">
+                    <div class="statistics-card-value">{{ submission_report().kdk_only }}</div>
+                    <div class="statistics-card-label">Meldebestätigung nur vom KDK</div>
+                </div>
+                <div class="statistics-card warning">
+                    <div class="statistics-card-value">{{ submission_report().grz_only }}</div>
+                    <div class="statistics-card-label">Meldebestätigung nur vom GRZ</div>
+                </div>
+                <div class="statistics-card error">
+                    <div class="statistics-card-value">{{ submission_report().missing_ongoing }}</div>
+                    <div class="statistics-card-label">Keine Meldebestätigung</div>
+                </div>
             </div>
             {% if let Some(latest_mv_consent) = latest_mv_consent() %}
             <hr/>
-            <div>
-                Letzte Teilnahmeerklärung MVH:
-                <ul>
-                    <li>
+            <h3>Letzte Teilnahmeerklärung MVH</h3>
+            <div class="statistics-consent">
+                <div class="statistics-card">
+                    <div class="statistics-card-value">
                         <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
-                        - Fälle mit Fallnummer.
+                    </div>
+                    <div class="statistics-card-label">
+                        Fälle mit Fallnummer
                         {% if latest_mv_consent.hnummer_days_past > 14 %}
                         <b class="invalid-case-count">vor {{ latest_mv_consent.hnummer_days_past }} Tagen</b>
                         {% endif %}
-                    </li>
-                    <li>
-                        <time datetime="{{ latest_mv_consent.date }}">{{ latest_mv_consent.date }}</time>
-                        - mit MV-Aufklärung.
+                    </div>
+                </div>
+                <div class="statistics-card">
+                    <div class="statistics-card-value">
+                        <time datetime="{{ latest_mv_consent.hnummer_date }}">{{ latest_mv_consent.hnummer_date }}</time>
+                    </div>
+                    <div class="statistics-card-label">
+                        Fälle mit MV-Aufklärung
                         {% if latest_mv_consent.days_past > 14 %}
                         <b class="invalid-case-count">vor {{ latest_mv_consent.days_past }} Tagen</b>
                         {% endif %}
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </div>
             {% endif %}
-            <hr/>
-            <div>
-                <ul>
-                    <li>Beide Meldebestätigungen: <b class="valid-case-count">{{ submission_report().both }}</b></li>
-                    <li>Meldebestätigung nur vom KDK: <b class="warning-case-count">{{ submission_report().kdk_only }}</b></li>
-                    <li>Meldebestätigung nur vom GRZ: <b class="warning-case-count">{{ submission_report().grz_only }}</b></li>
-                    <li>keine Meldebestätigung: <b class="invalid-case-count">{{ submission_report().missing_ongoing }}</b></li>
-                </ul>
-            </div>
         </div>
     </div>
 </div>
