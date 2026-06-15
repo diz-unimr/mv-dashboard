@@ -116,7 +116,7 @@ export function showCasesDiagram() {
             },
             {
                 type: 'pie',
-                radius: ['40%', '70%'],
+                radius: ['30%', '70%'],
                 label: {
                     show: false,
                     position: 'center'

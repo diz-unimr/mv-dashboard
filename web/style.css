@@ -64,7 +64,11 @@ main {
 }
 
 h1 {
-    @apply text-3xl font-bold;
+    @apply text-3xl font-bold my-4;
+}
+
+h2 {
+    @apply text-2xl font-bold my-4;
 }
 
 time {
@@ -87,10 +91,6 @@ input[type=text], input[type=password] {
 input[type=text]:focus-visible,
 input[type=password]:focus-visible {
     @apply border-b-green-900
-}
-
-select {
-    @apply appearance-none bg-gray-300 px-4 py-2 rounded pr-8;
 }
 
 .login-form {
@@ -135,7 +135,6 @@ select {
 
 section.case,
 section.followup,
-.case-count,
 .submission-count {
     @apply shadow-md border-gray-300 my-3 overflow-hidden;
     border-width: 1px;
@@ -259,6 +258,10 @@ section.followup.invalid div.followup-details {
     background: repeating-linear-gradient(-45deg, var(--color-red-100), var(--color-red-100) 10px, transparent 10px, transparent 20px);
 }
 
+#cases-graph {
+    @apply bg-white m-2 rounded-sm;
+}
+
 .statistics-main {
     @apply grid grid-cols-3 gap-2 text-lg font-normal my-2;
 }
@@ -315,50 +318,9 @@ section.followup.invalid div.followup-details {
     @apply font-bold text-xl;
 }
 
-.case-count,
 .submission-count {
     @apply font-bold bg-gray-100;
     align-content: center;
-}
-
-.case-count > span {
-    @apply flex-1 px-2;
-    align-content: center;
-}
-
-.case-count b,
-.submission-count b {
-    @apply font-bold text-white bg-gray-800 px-2 py-1 rounded-lg;
-}
-
-.case-count b.valid-case-count,
-.submission-count b.valid-case-count
-{
-    @apply bg-green-800;
-}
-
-.case-count b.warning-case-count,
-.submission-count b.warning-case-count {
-    @apply bg-yellow-600;
-}
-
-.case-count b.invalid-case-count,
-.submission-count b.invalid-case-count {
-    @apply bg-red-800;
-}
-
-.case-count #options {
-    @apply font-normal bg-gray-200 border-l-gray-300 flex justify-end;
-    border-left-width: 1px;
-}
-
-.case-count #options > span {
-    @apply p-2;
-    align-content: center;
-}
-
-.case-count #options button {
-    @apply bg-green-800 ;
 }
 
 .submission-count {
@@ -376,6 +338,37 @@ section.followup.invalid div.followup-details {
 
 .submission-count li:last-child:after {
     content: none;
+}
+
+#case-list {
+    @apply flex flex-row justify-between;
+    align-content: center;
+}
+
+#case-list > * {
+    @apply mt-4;
+    align-self: center;
+}
+
+#case-list select#visibility {
+    @apply inline-block bg-gray-50 rounded-md text-2xl font-bold cursor-pointer py-2 px-1;
+}
+
+#case-list #options {
+    @apply inline-grid grid-cols-2 bg-gray-100 rounded p-2 shadow-md border-gray-300;
+}
+
+#case-list #options > * {
+    @apply text-right;
+    align-self: center;
+}
+
+#case-list #options button {
+    @apply bg-green-800;
+}
+
+.no-consent-days {
+    @apply text-white bg-red-800 px-2 py-1 rounded-md;
 }
 
 .loading-indicator {
