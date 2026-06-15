@@ -42,7 +42,7 @@
                     <div class="statistics-card-label">Fälle abgeschlossen</div>
                 </div>
                 <div class="statistics-card error">
-                    <div class="statistics-card-value">{{ submission_report().missing_ongoing + submission_report().kdk_only + submission_report().grz_only }}</div>
+                    <div class="statistics-card-value">{{ invalid_case_count() }}</div>
                     <div class="statistics-card-label">Fälle noch offen</div>
                 </div>
             </div>

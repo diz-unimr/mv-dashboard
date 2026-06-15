@@ -70,7 +70,9 @@ impl CasesTemplate {
     }
 
     fn invalid_case_count(&self) -> usize {
-        self.cases.iter().filter(|case| !case.is_valid()).count()
+        self.submission_report().missing_ongoing
+            + self.submission_report().kdk_only
+            + self.submission_report().grz_only
     }
 
     fn hnummer_case_count(&self) -> usize {
@@ -128,7 +130,7 @@ impl CasesTemplate {
                 "case_count": self.case_count(),
                 "hnumber_case_count": self.hnummer_case_count(),
                 "valid_case_count": self.valid_case_count(),
-                "invalid_case_count": self.invalid_case_count()
+                "invalid_case_count": self.invalid_case_count(),
             },
             "submission_reports": {
                 "both": self.submission_report().both,
