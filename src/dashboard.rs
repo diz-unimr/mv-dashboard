@@ -31,6 +31,7 @@ pub(crate) struct Case {
     #[serde(rename = "caseId")]
     pub(crate) id: String,
     pub(crate) guid: Option<String>,
+    pub(crate) patient_name: Option<String>,
     #[serde(default)]
     pub(crate) deceased: bool,
     #[serde(default)]
@@ -378,6 +379,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -429,6 +431,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -480,6 +483,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -523,6 +527,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -593,6 +598,7 @@ mod tests {
         Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: None,
             onkostar_url: None,
             deceased: false,
             deceased_at_first_mtb: false,
@@ -632,6 +638,7 @@ mod tests {
         Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: None,
             onkostar_url: None,
             deceased: false,
             deceased_at_first_mtb: false,
@@ -655,6 +662,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -710,6 +718,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -752,6 +761,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -796,6 +806,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
@@ -845,6 +856,7 @@ mod tests {
         let case = Case {
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
+            patient_name: Some("Test Patient".to_string()),
             onkostar_url: Some("http://localhost:8080/onkostar".to_string()),
             deceased: false,
             deceased_at_first_mtb: false,
