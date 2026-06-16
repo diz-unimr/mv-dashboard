@@ -136,7 +136,7 @@ input[type=password]:focus-visible {
 section.case,
 section.followup,
 .submission-count {
-    @apply shadow-md border-gray-300 my-3 overflow-hidden;
+    @apply shadow-md border-gray-300 my-3;
     border-width: 1px;
     border-radius: .3rem;
 }
