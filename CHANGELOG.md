@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.2](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.1...v0.2.2) (2026-06-16)
+
+
+### Features
+
+* add patients name to dashboard model ([#47](https://github.com/diz-unimr/mv-dashboard/issues/47)) ([3c03f3b](https://github.com/diz-unimr/mv-dashboard/commit/3c03f3b3d4c1991fc4356a2bbccf7985d646424a))
+* enhance cases layout ([#45](https://github.com/diz-unimr/mv-dashboard/issues/45)) ([ce9b3d9](https://github.com/diz-unimr/mv-dashboard/commit/ce9b3d9cd7e4d378363817ca9dad0130bba94b78))
+* new statistics layout ([fd63897](https://github.com/diz-unimr/mv-dashboard/commit/fd63897f569e0593dd2a521db9730b394a089ef1))
+
+
+### Bug Fixes
+
+* do not hide overflow in case graph ([e5943e3](https://github.com/diz-unimr/mv-dashboard/commit/e5943e3d5e85af271708e3dcc53e26de07cae317))
+
 ## [0.2.1](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.0...v0.2.1) (2026-06-12)
 
 
