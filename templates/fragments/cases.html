@@ -101,7 +101,7 @@
         {% if case.is_valid() %}
         class="case valid"
         {% else %}
-        {% if case.has_valid_case_number() %} class="case invalid" {% else %} class="case invalid noh" style="display: none" {% endif %}
+        {% if case.has_valid_case_number() %} class="case invalid" {% else %} class="case noh" style="display: none" {% endif %}
         {% endif %}>
     <details {% if !case.is_valid() %} open {% endif %}>
         <summary>

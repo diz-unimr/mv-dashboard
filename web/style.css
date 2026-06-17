@@ -143,7 +143,7 @@ section.followup,
 
 section.case summary,
 section.followup .followup-header {
-    @apply text-lg bg-gray-800 px-2 font-bold relative cursor-pointer;
+    @apply text-lg bg-gray-600 px-2 font-bold relative cursor-pointer;
     color: white;
 }
 
@@ -174,12 +174,20 @@ section.followup .followup-header a:before {
     content: "🏥"
 }
 
+section.case.noh summary a {
+    @apply bg-gray-900
+}
+
 section.case summary a {
     @apply bg-green-900
 }
 
 section.case.invalid summary a {
     @apply bg-red-900
+}
+
+section.case.noh summary a:hover {
+    @apply bg-gray-950
 }
 
 section.case summary a:hover {
