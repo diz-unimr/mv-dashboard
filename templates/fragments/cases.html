@@ -232,7 +232,7 @@
                 </div>
                 {% endwhen %}
                 {% when None %}
-                <p class="invalid-part">Kein MTB mit Fallnummer</p>
+                <p {% if case.has_valid_case_number() %} class="invalid-part" {% else %} class="missing-part" {% endif %}>Kein MTB mit Fallnummer</p>
                 {% endwhen %}
                 {% endmatch %}
             </div>
@@ -251,7 +251,11 @@
                     {% endif %}
                     {% endwhen %}
                     {% when None %}
+                    {% if case.has_valid_case_number() %}
                     <p class="invalid-part">Keine Meldebestätigung KDK</p>
+                    {% else %}
+                    <p class="missing-part">Meldebestätigung KDK nicht geprüft</p>
+                    {% endif %}
                     {% endwhen %}
                     {% endmatch %}
                 </div>
@@ -269,7 +273,11 @@
                     {% endif %}
                     {% endwhen %}
                     {% when None %}
+                    {% if case.has_valid_case_number() %}
                     <p class="invalid-part">Keine Meldebestätigung GRZ</p>
+                    {% else %}
+                    <p class="missing-part">Meldebestätigung GRZ nicht geprüft</p>
+                    {% endif %}
                     {% endwhen %}
                     {% endmatch %}
                 </div>
