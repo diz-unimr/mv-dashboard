@@ -49,7 +49,7 @@ pub(crate) struct Case {
 impl Case {
     #[allow(clippy::expect_used)]
     pub fn formatted_case_id(&self) -> String {
-        let re = Regex::new(r"^(?<art>[IUH])(?<number>\d+)-(?<year>\d{2})$")
+        let re = Regex::new(r"^(?<art>[IUH]|NE)(?<number>\d+)-(?<year>\d{2})$")
             .expect("Invalid regex pattern");
 
         let Some(caps) = re.captures(&self.id) else {
@@ -77,7 +77,10 @@ impl Case {
             CaseState::IndicationDiscussed
         } else if self.formatted_case_id().starts_with('U') {
             CaseState::SequencingRequested
-        } else if self.formatted_case_id().starts_with('H') {
+        } else if self.formatted_case_id().starts_with('H') // MolPath
+            || self.formatted_case_id().starts_with("NE")
+        // NeuroPath
+        {
             CaseState::SequencingDone
         } else {
             CaseState::ConsentGiven
@@ -595,7 +598,7 @@ mod tests {
     #[rstest]
     #[case(
         "testresources/test1.json",
-        Case {
+        Case{
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             patient_name: None,
@@ -631,11 +634,11 @@ mod tests {
                 sequencing_type: SequencingType::Wes,
             }),
             next_follow_up_due: Some("2026-07-14".to_string()),
-        }
+            }
     )]
     #[case(
         "testresources/test2.json",
-        Case {
+        Case{
             id: "H1234-26".to_string(),
             guid: Some("TESTGUID".to_string()),
             patient_name: None,
@@ -648,7 +651,7 @@ mod tests {
             clinical_submission: None,
             genomic_submission: None,
             next_follow_up_due: None,
-        }
+            }
     )]
     fn test_should_deserialize_json(#[case] file_path: &str, #[case] expected: Case) {
         let content = fs::read_to_string(file_path).expect("Could not read test file");
