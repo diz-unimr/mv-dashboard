@@ -33,6 +33,7 @@ static API_CLIENT: LazyLock<XApiClient> = LazyLock::new(|| {
     }
 });
 
+#[allow(unused)]
 struct LatestMvConsent {
     days_past: i64,
     date: String,
