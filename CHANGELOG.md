@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.3](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.2...v0.2.3) (2026-06-17)
+
+
+### Features
+
+* add NE numbers for Neuropathologie ([#49](https://github.com/diz-unimr/mv-dashboard/issues/49)) ([62165d4](https://github.com/diz-unimr/mv-dashboard/commit/62165d4cc7afd92fe7b19a22b4b33cf2bbf9dcc9))
+* ignore reports if no case id given ([#51](https://github.com/diz-unimr/mv-dashboard/issues/51)) ([14edce3](https://github.com/diz-unimr/mv-dashboard/commit/14edce373f551189fb0df27aa7d84fff1e09f012))
+* mark cases without case id ([2b43110](https://github.com/diz-unimr/mv-dashboard/commit/2b43110f61b776ddcf7c489ca92c4951583cfb6a))
+
+
+### Bug Fixes
+
+* update template datetime for MV consent date ([3e04514](https://github.com/diz-unimr/mv-dashboard/commit/3e045149909cc737058601721c9d471d06ba8b57))
+
 ## [0.2.2](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.1...v0.2.2) (2026-06-16)
 
 
