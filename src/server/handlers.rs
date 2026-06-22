@@ -42,7 +42,7 @@ struct LatestMvConsent {
 }
 
 struct SubmissionReport {
-    both: usize,
+    required: usize,
     kdk_only: usize,
     grz_only: usize,
     missing_ongoing: usize,
@@ -85,18 +85,21 @@ impl CasesTemplate {
 
     fn submission_report(&self) -> SubmissionReport {
         SubmissionReport {
-            both: self
+            required: self
                 .cases
                 .iter()
                 .filter(|case| {
-                    case.clinical_submission.is_some() && case.genomic_submission.is_some()
+                    (case.clinical_submission.is_some() && case.genomic_submission.is_some())
+                        || case.has_valid_500_submissions()
                 })
                 .count(),
             kdk_only: self
                 .cases
                 .iter()
                 .filter(|case| {
-                    case.clinical_submission.is_some() && case.genomic_submission.is_none()
+                    case.clinical_submission.is_some()
+                        && case.genomic_submission.is_none()
+                        && !case.has_valid_500_submissions()
                 })
                 .count(),
             grz_only: self
@@ -134,7 +137,7 @@ impl CasesTemplate {
                 "invalid_case_count": self.invalid_case_count(),
             },
             "submission_reports": {
-                "both": self.submission_report().both,
+                "required": self.submission_report().required,
                 "kdk_only": self.submission_report().kdk_only,
                 "grz_only": self.submission_report().grz_only,
                 "missing_ongoing": self.submission_report().missing_ongoing,

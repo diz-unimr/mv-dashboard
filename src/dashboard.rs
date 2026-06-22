@@ -87,7 +87,7 @@ impl Case {
         }
     }
 
-    pub fn has_valid_submissions(&self) -> bool {
+    pub fn has_valid_seq_submissions(&self) -> bool {
         let clinical_submission = self
             .clinical_submission
             .as_ref()
@@ -110,7 +110,53 @@ impl Case {
                 && clinical_submission != &SequencingType::Missing)
     }
 
+    pub fn has_valid_500_submissions(&self) -> bool {
+        let clinical_submission = self
+            .clinical_submission
+            .as_ref()
+            .map_or(&SequencingType::Missing, |submission| {
+                &submission.sequencing_type
+            });
+
+        let genomic_submission = self
+            .genomic_submission
+            .as_ref()
+            .map_or(&SequencingType::Missing, |submission| {
+                &submission.sequencing_type
+            });
+
+        clinical_submission == &SequencingType::None
+            && genomic_submission == &SequencingType::Missing
+    }
+
     pub fn is_valid(&self) -> bool {
+        self.is_valid_500_case() || self.is_valid_seq_case()
+    }
+
+    pub fn is_valid_500_case(&self) -> bool {
+        self.is_first_mtb_after_mv_consent()
+            && self.broad_consent.is_some()
+            && match &self.mtb {
+                Some(mtb) => {
+                    if let Some(care_plans) = &mtb.care_plans
+                        && care_plans.len() == 1
+                    {
+                        true
+                    } else {
+                        false
+                    }
+                }
+                None => false,
+            }
+            && match &self.mv_consent {
+                Some(mv_consent) => mv_consent.is_valid(),
+                None => false,
+            }
+            && !self.deceased_at_first_mtb
+            && self.has_valid_500_submissions()
+    }
+
+    fn is_valid_seq_case(&self) -> bool {
         self.is_first_mtb_after_mv_consent()
             && self.broad_consent.is_some()
             && match &self.mtb {
@@ -136,7 +182,7 @@ impl Case {
                 None => false,
             }
             && !self.deceased_at_first_mtb
-            && self.has_valid_submissions()
+            && self.has_valid_seq_submissions()
             && match &self.clinical_submission {
                 Some(submission) => submission.sequencing_type != SequencingType::Missing,
                 _ => false,
@@ -756,7 +802,7 @@ mod tests {
             next_follow_up_due: Some("2026-07-14".to_string()),
         };
 
-        assert_eq!(case.has_valid_submissions(), expected);
+        assert_eq!(case.has_valid_seq_submissions(), expected);
     }
 
     #[test]
