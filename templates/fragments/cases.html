@@ -31,7 +31,7 @@
             </div>
             <div class="statistics-more">
                 <div class="statistics-card success">
-                    <div class="statistics-card-value">{{ submission_report().both }}</div>
+                    <div class="statistics-card-value">{{ submission_report().required }}</div>
                     <div class="statistics-card-label">Erforderliche Meldebestätigungen</div>
                 </div>
                 <div class="statistics-card warning">
@@ -117,6 +117,9 @@
             {% when CaseState::SequencingDone %}
             <span class="case-state">Sequenzierung abgeschlossen</span>
             {% endmatch %}
+            {% if case.is_valid_500_case() %}
+            <span class="case-state">Fallpauschale</span>
+            {% endif %}
             {% if case.deceased %}
             <span class="deceased">✝️ Patient verstorben</span>
             {% endif %}
@@ -247,7 +250,7 @@
                     {% if clinical_submission.id.is_empty() %}
                     <p class="warning-part">ohne Kennung</p>
                     {% else %}
-                    <p {% if !case.has_valid_submissions() %} class="invalid-part" {% endif %}><b>{{ clinical_submission.sequencing_type }}</b> mit Kennung <code>{{ clinical_submission.id }}</code></p>
+                    <p {% if !case.has_valid_seq_submissions() %} class="invalid-part" {% endif %}><b>{{ clinical_submission.sequencing_type }}</b> mit Kennung <code>{{ clinical_submission.id }}</code></p>
                     {% endif %}
                     {% endwhen %}
                     {% when None %}
@@ -269,12 +272,14 @@
                     {% if genomic_submission.id.is_empty() %}
                     <p class="warning-part">ohne Kennung</p>
                     {% else %}
-                    <p {% if !case.has_valid_submissions() %} class="invalid-part" {% endif %}><b>{{ genomic_submission.sequencing_type }}</b> mit Kennung <code>{{ genomic_submission.id }}</code></p>
+                    <p {% if !case.has_valid_seq_submissions() %} class="invalid-part" {% endif %}><b>{{ genomic_submission.sequencing_type }}</b> mit Kennung <code>{{ genomic_submission.id }}</code></p>
                     {% endif %}
                     {% endwhen %}
                     {% when None %}
-                    {% if case.has_valid_case_number() %}
+                    {% if case.has_valid_case_number() && !case.has_valid_500_submissions() %}
                     <p class="invalid-part">Keine Meldebestätigung GRZ</p>
+                    {% else if case.has_valid_case_number() && case.has_valid_500_submissions() %}
+                    <p class="missing-part">Meldebestätigung GRZ entfällt</p>
                     {% else %}
                     <p class="missing-part">Meldebestätigung GRZ nicht geprüft</p>
                     {% endif %}

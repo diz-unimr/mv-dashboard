@@ -122,7 +122,7 @@ export function showCasesDiagram() {
                     position: 'center'
                 },
                 data: [
-                    { name: 'Beide Meldebestätigungen', value: data.submission_reports['both'], itemStyle: { color: '#016630' } },
+                    { name: 'Erforderliche Meldebestätigungen', value: data.submission_reports['required'], itemStyle: { color: '#016630' } },
                     { name: 'Meldebestätigung nur vom KDK', value: data.submission_reports['kdk_only'], itemStyle: { color: '#d08700' } },
                     { name: 'Meldebestätigung nur vom GRZ', value: data.submission_reports['grz_only'], itemStyle: { color: '#d08700' } },
                     { name: 'Keine Meldebestätigung', value: data.submission_reports['missing_ongoing'], itemStyle: { color: '#9f0712' } },
