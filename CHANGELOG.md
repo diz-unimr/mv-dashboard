@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.3...v0.3.0) (2026-06-23)
+
+
+### Features
+
+* add statistics by sequencing type ([#54](https://github.com/diz-unimr/mv-dashboard/issues/54)) ([19bd9c0](https://github.com/diz-unimr/mv-dashboard/commit/19bd9c0c61d4eb4d5847e211b4eb6dd746212636))
+* add support for "Fallpauschale" MV cases ([#52](https://github.com/diz-unimr/mv-dashboard/issues/52)) ([f285917](https://github.com/diz-unimr/mv-dashboard/commit/f285917af303aaec115484338daac6fa9bd0752d))
+
+
+### Miscellaneous Chores
+
+* release 0.3.0 ([87a5d16](https://github.com/diz-unimr/mv-dashboard/commit/87a5d16854f3f92bdafdcc6951f786cfbdde2180))
+
 ## [0.2.3](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.2...v0.2.3) (2026-06-17)
 
 
