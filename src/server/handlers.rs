@@ -4,18 +4,20 @@ use crate::auth::Backend;
 use crate::dashboard::{ApiClient, Case, CaseState, SequencingType};
 use askama::Template;
 use axum::body::Body;
-use axum::extract::Path;
+use axum::extract::{Path, Query};
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{Response, StatusCode};
 use axum::response::{Html, IntoResponse};
 use axum_login::AuthSession;
-use chrono::Utc;
+use chrono::{Datelike, Utc};
 use include_dir::{Dir, include_dir};
 use itertools::Itertools;
 use log::error;
 use moka::future::Cache;
+use serde::Deserialize;
 use serde_json::json;
 use std::path;
+use std::range::RangeInclusive;
 use std::sync::LazyLock;
 use std::time::Duration;
 
@@ -56,6 +58,11 @@ struct SubmissionSequencingTypeReport {
     wgs: usize,
 }
 
+#[derive(Deserialize)]
+pub(crate) struct CaseFilter {
+    year: Option<i32>,
+}
+
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate {
@@ -66,6 +73,7 @@ struct IndexTemplate {
 #[template(path = "fragments/cases.html")]
 struct CasesTemplate {
     cases: Vec<Case>,
+    selected_year: Option<i32>,
 }
 
 impl CasesTemplate {
@@ -230,6 +238,10 @@ impl CasesTemplate {
             },
         })
     }
+
+    fn years(&self) -> RangeInclusive<i32> {
+        RangeInclusive::from(2025..=Utc::now().year())
+    }
 }
 
 #[derive(Template)]
@@ -263,6 +275,7 @@ pub(super) async fn handle_index_request(
 #[allow(clippy::expect_used)]
 pub(super) async fn handle_cases_request(
     auth: AuthSession<Backend>,
+    filter: Query<CaseFilter>,
 ) -> Result<impl IntoResponse, String> {
     let user = auth.user.clone().unwrap_or_default();
 
@@ -278,8 +291,21 @@ pub(super) async fn handle_cases_request(
         }
     };
 
+    let cases = match filter.year {
+        Some(year) => response
+            .cases
+            .into_iter()
+            .filter(|case| match case.leistungsdatum() {
+                Some(date) => date.year() == year,
+                None => false,
+            })
+            .collect_vec(),
+        None => response.cases.clone(),
+    };
+
     let template = CasesTemplate {
-        cases: response.cases,
+        cases,
+        selected_year: filter.year,
     };
     Ok(Html(template.render().expect("Could not render template")).into_response())
 }

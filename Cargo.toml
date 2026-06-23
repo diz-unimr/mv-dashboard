@@ -7,7 +7,7 @@ edition = "2024"
 tokio = { version = "1.52", features = ["macros", "rt-multi-thread", "time", "tracing"] }
 tower-http = {version = "0.6", features = ["trace", "cors"]}
 tower-sessions = "0.14"
-axum = { version = "0.8", features = ["tokio", "tracing"] }
+axum = { version = "0.8", features = ["tokio", "tracing", "query"] }
 axum-login = { version = "0.18"}
 askama = "0.16"
 clap = { version = "4.6", features = ["cargo", "env", "derive"] }
