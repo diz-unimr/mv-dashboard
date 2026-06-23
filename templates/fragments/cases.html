@@ -1,12 +1,14 @@
 <div id="cases">
-<h1>MVH-Dashboard - Fälle</h1>
-
-<p>
-    Aufgeführt sind alle Fälle aus Onkostar, sortiert nach Fallnummer.
-</p>
-
-{% if cases.len() > 0 %}
-
+<h1>
+    MVH-Dashboard
+    -
+    <select id="year-select" name="year" hx-get="/mv-dashboard/cases" hx-target="#cases" hx-trigger="change" hx-indicator="#main-spinner">
+        <option value="">Alle Fälle</option>
+        {% for year in years() %}
+        <option value="{{ year }}" {% if selected_year.is_some() && year == selected_year.unwrap_or(0)  %} selected {% endif %}>Leistungsdatum im Jahr {{ year }}</option>
+        {% endfor %}
+    </select>
+</h1>
 
 <div class="submission-count">
     <h3>Stand der Fallbearbeitung</h3>
@@ -99,6 +101,8 @@
     {% endif %}
 </div>
 
+{% if cases.len() > 0 %}
+
 <div id="case-list">
     <select id="visibility" onchange="window.changeVisibility(this.value)">
         <option value="withh">Fälle mit Fallnummer ({{ hnummer_case_count() }})</option>
@@ -111,10 +115,22 @@
             <label for="openAllCases">Alle Fälle ausklappen</label>
         </span>
         <span>
+            {% if selected_year.is_some() %}
+            <button hx-get="/mv-dashboard/cases?year={{ selected_year.unwrap_or(0) }}" hx-target="#cases">Fälle neu laden</button>
+            {% else %}
             <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
+            {% endif %}
         </span>
     </div>
 </div>
+
+<p>
+    {% if selected_year.is_some() %}
+    Aufgeführt sind alle Fälle mit Leistungsdatum im Jahr {{ selected_year.unwrap_or(0) }} aus Onkostar, sortiert nach Fallnummer.
+    {% else %}
+    Aufgeführt sind alle Fälle aus Onkostar, sortiert nach Fallnummer.
+    {% endif %}
+</p>
 
 {% for case in cases %}
 <section
@@ -140,6 +156,10 @@
             {% if case.is_valid_500_case() %}
             <span class="case-state">Fallpauschale</span>
             {% endif %}
+            {% match case.leistungsdatum() %}
+            {% when Some(leistungsdatum) %}<span class="case-state">Leistungsdatum: <time datetime="{{ leistungsdatum }}">{{ leistungsdatum.format("%d.%m.%Y") }}</time></span>
+            {% when None %}
+            {% endmatch %}
             {% if case.deceased %}
             <span class="deceased">✝️ Patient verstorben</span>
             {% endif %}
@@ -313,6 +333,29 @@
 {% endfor %}
 
 {% else %}
-<b>Keine Fälle gefunden</b>
+
+<div id="case-list">
+    <h2>
+        {% if selected_year.is_some() %}
+        Keine Fälle mit Leistungsdatum im Jahr {{ selected_year.unwrap_or(0) }} gefunden
+        {% else %}
+        Keine Fälle gefunden
+        {% endif %}
+    </h2>
+    <div id="options">
+    <span>
+        <input id="openAllCases" type="checkbox" disabled />
+        <label class="disabled" for="openAllCases">Alle Fälle ausklappen</label>
+    </span>
+    <span>
+        {% if selected_year.is_some() %}
+        <button hx-get="/mv-dashboard/cases?year={{ selected_year.unwrap_or(0) }}" hx-target="#cases">Fälle neu laden</button>
+        {% else %}
+        <button hx-get="/mv-dashboard/cases" hx-target="#cases">Fälle neu laden</button>
+        {% endif %}
+    </span>
+    </div>
+</div>
+
 {% endif %}
 </div>

@@ -262,6 +262,41 @@ impl Case {
         }
         false
     }
+
+    pub fn leistungsdatum(&self) -> Option<NaiveDate> {
+        if self.is_valid()
+            && let Some(clinical_submission) = &self.clinical_submission
+            && self.genomic_submission.is_none()
+        {
+            let Ok(clinical_submission_date) =
+                NaiveDate::parse_from_str(&clinical_submission.date, "%Y-%m-%d")
+            else {
+                return None;
+            };
+            return Some(clinical_submission_date);
+        }
+        if self.is_valid()
+            && let Some(clinical_submission) = &self.clinical_submission
+            && let Some(genomic_submission) = &self.genomic_submission
+        {
+            let Ok(clinical_submission_date) =
+                NaiveDate::parse_from_str(&clinical_submission.date, "%Y-%m-%d")
+            else {
+                return None;
+            };
+            let Ok(genomic_submission_date) =
+                NaiveDate::parse_from_str(&genomic_submission.date, "%Y-%m-%d")
+            else {
+                return None;
+            };
+
+            if clinical_submission_date > genomic_submission_date {
+                return Some(clinical_submission_date);
+            }
+            return Some(genomic_submission_date);
+        }
+        None
+    }
 }
 
 #[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]

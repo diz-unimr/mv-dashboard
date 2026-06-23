@@ -93,6 +93,11 @@ input[type=password]:focus-visible {
     @apply border-b-green-900
 }
 
+input[disabled],
+label.disabled {
+    @apply text-gray-500 cursor-not-allowed;
+}
+
 .login-form {
     @apply shadow-md border-gray-500 border-2;
 
@@ -201,6 +206,11 @@ section.case.invalid summary a:hover {
 section.case summary span.case-state,
 section.case summary span.deceased {
     @apply ml-4 font-normal;
+}
+
+section.case span.case-state:before {
+    @apply mr-4 inline;
+    content: "•";
 }
 
 section.case summary a:last-child,
@@ -358,6 +368,7 @@ section.followup.invalid div.followup-details {
     align-self: center;
 }
 
+select#year-select,
 #case-list select#visibility {
     @apply inline-block bg-gray-50 rounded-md text-2xl font-bold cursor-pointer py-2 px-1;
 }
