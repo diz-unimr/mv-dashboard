@@ -1,7 +1,7 @@
 use crate::CONFIG;
 use crate::api_client::XApiClient;
 use crate::auth::Backend;
-use crate::dashboard::{ApiClient, Case, CaseState};
+use crate::dashboard::{ApiClient, Case, CaseState, SequencingType};
 use askama::Template;
 use axum::body::Body;
 use axum::extract::Path;
@@ -47,6 +47,13 @@ struct SubmissionReport {
     grz_only: usize,
     missing_ongoing: usize,
     missing_all: usize,
+}
+
+struct SubmissionSequencingTypeReport {
+    none: usize,
+    panel: usize,
+    wes: usize,
+    wgs: usize,
 }
 
 #[derive(Template)]
@@ -125,6 +132,30 @@ impl CasesTemplate {
                     case.clinical_submission.is_none() && case.genomic_submission.is_none()
                 })
                 .count(),
+        }
+    }
+
+    fn submission_sequencing_type_report(&self) -> SubmissionSequencingTypeReport {
+        fn count(cases: &[Case], sequencing_type: &SequencingType) -> usize {
+            cases
+                .iter()
+                .filter(|case| case.is_valid())
+                .filter(|case| {
+                    if let Some(submission) = &case.clinical_submission {
+                        &submission.sequencing_type == sequencing_type
+                    } else {
+                        false
+                    }
+                })
+                .count()
+        }
+
+        SubmissionSequencingTypeReport {
+            none: count(&self.cases, &SequencingType::None),
+            panel: count(&self.cases, &SequencingType::Panel),
+            wes: count(&self.cases, &SequencingType::Wes)
+                + count(&self.cases, &SequencingType::WesLr),
+            wgs: count(&self.cases, &SequencingType::Wgs),
         }
     }
 

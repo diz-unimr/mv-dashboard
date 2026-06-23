@@ -49,6 +49,26 @@
             </div>
         </div>
     </div>
+    <hr/>
+    <h3>Abgeschlossene Fälle nach Sequenzierungstyp</h3>
+    <div class="statistics-more">
+        <div {% if submission_sequencing_type_report().none > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
+            <div class="statistics-card-value">{{ submission_sequencing_type_report().none }}</div>
+            <div class="statistics-card-label">Keine Sequenzierung (Fallpauschale)</div>
+        </div>
+        <div {% if submission_sequencing_type_report().panel > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
+            <div class="statistics-card-value">{{ submission_sequencing_type_report().panel }}</div>
+            <div class="statistics-card-label">Sequenzierungstyp <b>Panel</b></div>
+        </div>
+        <div {% if submission_sequencing_type_report().wes > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
+            <div class="statistics-card-value">{{ submission_sequencing_type_report().wes }}</div>
+            <div class="statistics-card-label">Sequenzierungstyp <b>WES</b></div>
+        </div>
+        <div {% if submission_sequencing_type_report().wgs > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
+            <div class="statistics-card-value">{{ submission_sequencing_type_report().wgs }}</div>
+            <div class="statistics-card-label">Sequenzierungstyp <b>WGS</b></div>
+        </div>
+    </div>
     {% if let Some(latest_mv_consent) = latest_mv_consent() %}
     <hr/>
     <h3>Letzte Teilnahmeerklärung MVH</h3>
