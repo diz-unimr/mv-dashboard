@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.0...v0.3.1) (2026-06-23)
+
+
+### Features
+
+* add filter by Leistungsdatum ([#55](https://github.com/diz-unimr/mv-dashboard/issues/55)) ([d6a5561](https://github.com/diz-unimr/mv-dashboard/commit/d6a5561e2f5f10994ea384b2326f107b2d323da7))
+
 ## [0.3.0](https://github.com/diz-unimr/mv-dashboard/compare/v0.2.3...v0.3.0) (2026-06-23)
 
 
