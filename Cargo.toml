@@ -5,8 +5,8 @@ edition = "2024"
 
 [dependencies]
 tokio = { version = "1.52", features = ["macros", "rt-multi-thread", "time", "tracing"] }
-tower-http = {version = "0.6", features = ["trace", "cors"]}
-tower-sessions = "0.14"
+tower-http = {version = "0.7", features = ["trace", "cors"]}
+tower-sessions = "0.15"
 axum = { version = "0.8", features = ["tokio", "tracing", "query"] }
 axum-login = { version = "0.18"}
 askama = "0.16"
@@ -22,12 +22,12 @@ uuid = {version = "1.23", features = ["v4"], default-features = false}
 regex = "1.12"
 include_dir = "0.7"
 chrono = "0.4"
-itertools = "0.14"
+itertools = "0.15"
 moka = { version = "0.12", features = ["future"] }
 humantime = "2.3"
 
 [dev-dependencies]
-rstest = "0.26"
+rstest = "0.27"
 tower = "0.5"
 httpmock = "0.8"
 
