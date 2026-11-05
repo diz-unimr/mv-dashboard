@@ -27,9 +27,9 @@ moka = { version = "0.12", features = ["future"] }
 humantime = "2.3"
 
 [dev-dependencies]
-rstest = "0.26"
+rstest = "0.28"
 tower = "0.5"
-httpmock = "0.8"
+httpmock = "0.9"
 
 # Lints
 
