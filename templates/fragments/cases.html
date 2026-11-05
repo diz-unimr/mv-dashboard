@@ -108,6 +108,7 @@
         <option value="withh">Fälle mit Fallnummer ({{ hnummer_case_count() }})</option>
         <option value="open">Offene Fälle ({{ invalid_case_count() }})</option>
         <option value="all">Alle aufgeklärten Patienten ({{ case_count() }})</option>
+        <option value="nomvc">Ohne Teilnahmeerklärung ({{ without_mvconsent_count() }})</option>
     </select>
     <div id="options">
         <span>
@@ -137,7 +138,15 @@
         {% if case.is_valid() %}
         class="case valid"
         {% else %}
-        {% if case.has_valid_case_number() %} class="case invalid" {% else %} class="case noh" style="display: none" {% endif %}
+        {% if case.has_valid_case_number() %}
+            {% if case.mv_consent.is_none() %}
+                class="case invalid nomvc"
+            {% else %}
+                class="case invalid"
+            {% endif %}
+        {% else %}
+            class="case noh" style="display: none"
+        {% endif %}
         {% endif %}>
     <details {% if !case.is_valid() %} open {% endif %}>
         <summary>
