@@ -98,6 +98,13 @@ impl CasesTemplate {
             .count()
     }
 
+    fn without_mvconsent_count(&self) -> usize {
+        self.cases
+            .iter()
+            .filter(|case| case.mv_consent.is_none())
+            .count()
+    }
+
     fn submission_report(&self) -> SubmissionReport {
         SubmissionReport {
             required: self

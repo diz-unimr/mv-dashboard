@@ -69,6 +69,13 @@ export function changeVisibility(value) {
         Array.from(document.querySelectorAll('section.case.noh')).forEach((section) => {
             section.style.display = 'none';
         })
+    } else if (value === 'nomvc') {
+        Array.from(document.querySelectorAll('section.case')).forEach((section) => {
+            section.style.display = 'none';
+        })
+        Array.from(document.querySelectorAll('section.case.nomvc')).forEach((section) => {
+            section.style.display = 'block';
+        })
     }
 }
 
