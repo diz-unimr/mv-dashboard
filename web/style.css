@@ -288,6 +288,10 @@ section.followup.invalid div.followup-details {
     @apply grid grid-cols-4 gap-2 font-normal my-2;
 }
 
+.statistics-initial {
+    @apply grid grid-cols-3 gap-2 font-normal my-2;
+}
+
 .statistics-consent {
     @apply grid grid-cols-2 gap-2 font-normal my-2;
 }
@@ -306,6 +310,24 @@ section.followup.invalid div.followup-details {
 
 .statistics-more .statistics-card-value {
     @apply text-4xl font-bold;
+}
+
+.statistics-initial .statistics-card-value {
+    @apply text-4xl font-bold grid grid-cols-2 gap-2 pb-2;
+}
+
+.statistics-initial .statistics-card-value > div:first-child {
+    @apply border-r-gray-200 border-dashed;
+    border-width: 0 1px 0 0;
+}
+
+.statistics-initial .statistics-card-value small {
+    @apply text-sm block font-normal;
+}
+
+.statistics-initial .statistics-card-label {
+    @apply border-t-gray-200 border-dashed pt-2;
+    border-width: 1px 0 0 0;
 }
 
 .statistics-consent .statistics-card-value {

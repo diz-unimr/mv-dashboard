@@ -58,6 +58,12 @@ struct SubmissionSequencingTypeReport {
     wgs: usize,
 }
 
+struct InitialSubmissions {
+    kdk: usize,
+    grz: usize,
+    sum: usize,
+}
+
 #[derive(Deserialize)]
 pub(crate) struct CaseFilter {
     year: Option<i32>,
@@ -174,6 +180,28 @@ impl CasesTemplate {
         }
     }
 
+    fn initial_submissions(&self, year: i32) -> InitialSubmissions {
+        let kdk = self
+            .cases
+            .iter()
+            .filter_map(|case| case.clinical_submission.as_ref())
+            .filter(|submission| submission.date.starts_with(&year.to_string()))
+            .count();
+
+        let grz = self
+            .cases
+            .iter()
+            .filter_map(|case| case.genomic_submission.as_ref())
+            .filter(|submission| submission.date.starts_with(&year.to_string()))
+            .count();
+
+        InitialSubmissions {
+            kdk,
+            grz,
+            sum: kdk + grz,
+        }
+    }
+
     fn json_data(&self) -> String {
         let data = json!({
             "cases": {
@@ -248,6 +276,10 @@ impl CasesTemplate {
 
     fn years(&self) -> RangeInclusive<i32> {
         RangeInclusive::from(2025..=Utc::now().year())
+    }
+
+    fn current_selected_year(&self) -> i32 {
+        self.selected_year.unwrap_or(Utc::now().year())
     }
 }
 
