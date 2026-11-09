@@ -313,7 +313,7 @@ section.followup.invalid div.followup-details {
 }
 
 .statistics-initial .statistics-card-value {
-    @apply text-4xl font-bold grid grid-cols-2 gap-2 pb-2;
+    @apply text-4xl font-bold grid grid-cols-2 pb-2;
 }
 
 .statistics-initial .statistics-card-value > div:first-child {
@@ -325,8 +325,13 @@ section.followup.invalid div.followup-details {
     @apply text-sm block font-normal;
 }
 
+.statistics-initial .initial-graph {
+    @apply bg-white mx-2 rounded;
+    height: 80px;
+}
+
 .statistics-initial .statistics-card-label {
-    @apply border-t-gray-200 border-dashed pt-2;
+    @apply border-t-gray-200 border-dashed py-2;
     border-width: 1px 0 0 0;
 }
 
