@@ -14,7 +14,7 @@ use include_dir::{Dir, include_dir};
 use itertools::Itertools;
 use log::error;
 use moka::future::Cache;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::path;
 use std::range::RangeInclusive;
@@ -202,6 +202,80 @@ impl CasesTemplate {
         }
     }
 
+    fn initial_submissions_json(&self, year: i32) -> String {
+        #[derive(Serialize)]
+        struct Item {
+            month: String,
+            count: usize,
+        }
+
+        let months = (1..=12)
+            .map(|month| format!("{year}-{month:0>2}"))
+            .collect_vec();
+
+        let kdk = self
+            .cases
+            .iter()
+            .filter_map(|case| case.clinical_submission.as_ref())
+            .filter(|submission| submission.date.starts_with(&year.to_string()))
+            .sorted_by_key(|submission| &submission.date)
+            .chunk_by(|submission| submission.date[0..7].to_string())
+            .into_iter()
+            .map(|(key, group)| (key, group.count()))
+            .collect_vec();
+
+        let kdk = months
+            .clone()
+            .into_iter()
+            .map(
+                |month| match kdk.iter().find(|(key, _)| key.starts_with(&month)) {
+                    Some((month, count)) => Item {
+                        month: month.clone(),
+                        count: *count,
+                    },
+                    _ => Item {
+                        month: month.clone(),
+                        count: 0,
+                    },
+                },
+            )
+            .collect_vec();
+
+        let grz = self
+            .cases
+            .iter()
+            .filter_map(|case| case.genomic_submission.as_ref())
+            .filter(|submission| submission.date.starts_with(&year.to_string()))
+            .sorted_by_key(|submission| &submission.date)
+            .chunk_by(|submission| submission.date[0..7].to_string())
+            .into_iter()
+            .map(|(key, group)| (key, group.count()))
+            .collect_vec();
+
+        let grz = months
+            .into_iter()
+            .map(
+                |month| match grz.iter().find(|(key, _)| key.starts_with(&month)) {
+                    Some((month, count)) => Item {
+                        month: month.clone(),
+                        count: *count,
+                    },
+                    _ => Item {
+                        month: month.clone(),
+                        count: 0,
+                    },
+                },
+            )
+            .collect_vec();
+
+        let data = json!({
+            "kdk": kdk,
+            "grz": grz
+        });
+
+        serde_json::to_string(&data).unwrap_or_default()
+    }
+
     fn json_data(&self) -> String {
         let data = json!({
             "cases": {
@@ -275,7 +349,7 @@ impl CasesTemplate {
     }
 
     fn years(&self) -> RangeInclusive<i32> {
-        RangeInclusive::from(2025..=Utc::now().year())
+        RangeInclusive::from(Utc::now().year() - 2..=Utc::now().year())
     }
 
     fn current_selected_year(&self) -> i32 {

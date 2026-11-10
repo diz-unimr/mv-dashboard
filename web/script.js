@@ -2,14 +2,17 @@ import * as styles from './style.css';
 import 'htmx.org'
 
 import * as echarts from 'echarts/core';
-import { PieChart } from 'echarts/charts';
+import { BarChart, PieChart } from 'echarts/charts';
 import { SVGRenderer } from 'echarts/renderers';
 import {
-    TooltipComponent
+    TooltipComponent,
+    GridComponent
 } from 'echarts/components';
 
 echarts.use([
+    BarChart,
     PieChart,
+    GridComponent,
     TooltipComponent,
     SVGRenderer
 ]);
@@ -43,6 +46,7 @@ window.addEventListener('htmx:afterRequest', () => {
     formatTimeElements();
     openAllCasesCheckbox();
     showCasesDiagram();
+    showInitialSubmissionDiagrams();
 });
 
 window.addEventListener('htmx:responseError', (event) => {
@@ -99,8 +103,6 @@ export function showCasesDiagram() {
         return;
     }
 
-    console.log(data);
-
     let chart = echarts.init(elem, null, {renderer: 'svg'});
 
     let option = {
@@ -135,6 +137,79 @@ export function showCasesDiagram() {
                     { name: 'Keine Meldebestätigung', value: data.submission_reports['missing_ongoing'], itemStyle: { color: '#9f0712' } },
                     { name: 'Ohne Fallnummer (aber aufgeklärt)', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
                 ],
+            }
+        ]
+    }
+
+    option && chart.setOption(option);
+}
+
+export function showInitialSubmissionDiagrams() {
+    Array.from(document.querySelectorAll('.initial-graph'))
+        .map((elem) => elem.id)
+        .forEach(showInitialSubmissionDiagram);
+}
+
+export function showInitialSubmissionDiagram(name) {
+    let elem = document.getElementById(name);
+    let data = JSON.parse(elem.dataset.value);
+
+    if (!data) {
+        return;
+    }
+
+    let chart = echarts.init(elem, null, {renderer: 'svg'});
+
+    let months = data.kdk.map((item) => item.month);
+
+    let option = {
+        tooltip: {
+            trigger: 'item',
+            formatter: '{b}: {c} ({a})'
+        },
+        title: false,
+        grid: {
+            top: 8,
+            bottom: 8,
+            left: 0,
+            right: 0,
+            containLabel: true
+        },
+        xAxis: {
+            data: months,
+            axisLabel: {
+                interval: 2
+            }
+        },
+        yAxis: {
+            show: false
+        },
+        series: [
+            {
+                name: 'KDK',
+                type: 'bar',
+                stack: 'total',
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                itemStyle: {
+                    color: '#707050'
+                },
+                data: data.kdk.map((item) => item.count)
+            },
+            {
+                name: 'GRZ',
+                type: 'bar',
+                stack: 'total',
+                label: {
+                    show: false,
+                    position: 'center'
+                },
+                itemStyle: {
+                    color: '#505070'
+                },
+                data: data.grz.map((item) => item.count)
             }
         ]
     }

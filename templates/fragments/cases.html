@@ -71,6 +71,22 @@
             <div class="statistics-card-label">Sequenzierungstyp <b>WGS</b></div>
         </div>
     </div>
+    <hr/>
+    <h3>Initialmeldungen nach Auswahl</h3>
+    <div class="statistics-initial">
+        {% for offset in (0..=2).rev() %}
+        <div {% if initial_submissions(current_selected_year() - offset).sum > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
+            <div class="statistics-card-value">
+                <div>{{ initial_submissions(current_selected_year() - offset).kdk }}<small>KDK</small></div>
+                <div>{{ initial_submissions(current_selected_year() - offset).grz }}<small>GRZ</small></div>
+            </div>
+            <div class="statistics-card-label">Initialmeldungen {{ current_selected_year() - offset }}</div>
+            <div class="initial-graph" id="initial-graph_{{ current_selected_year() - offset }}" data-value='{{ initial_submissions_json(current_selected_year() - offset) }}'>
+                <!-- graph will be loaded here -->
+            </div>
+        </div>
+        {% endfor %}
+    </div>
     {% if let Some(latest_mv_consent) = latest_mv_consent() %}
     <hr/>
     <h3>Letzte Teilnahmeerklärung MVH</h3>
@@ -99,31 +115,6 @@
         </div>
     </div>
     {% endif %}
-    <hr/>
-    <h3>Initialmeldungen entsprechend Auswahl</h3>
-    <div class="statistics-initial">
-        <div {% if initial_submissions(current_selected_year() - 2).sum > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
-            <div class="statistics-card-value">
-                <div>{{ initial_submissions(current_selected_year() - 2).kdk }}<small>KDK</small></div>
-                <div>{{ initial_submissions(current_selected_year() - 2).grz }}<small>GRZ</small></div>
-            </div>
-            <div class="statistics-card-label">Initialmeldungen {{ current_selected_year() - 2 }}</div>
-        </div>
-        <div {% if initial_submissions(current_selected_year() - 1).sum > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
-            <div class="statistics-card-value">
-                <div>{{ initial_submissions(current_selected_year() - 1).kdk }}<small>KDK</small></div>
-                <div>{{ initial_submissions(current_selected_year() - 1).grz }}<small>GRZ</small></div>
-            </div>
-            <div class="statistics-card-label">Initialmeldungen {{ current_selected_year() - 1 }}</div>
-        </div>
-        <div {% if initial_submissions(current_selected_year()).sum > 0 %} class="statistics-card success" {% else %} class="statistics-card all" {% endif %}>
-            <div class="statistics-card-value">
-                <div>{{ initial_submissions(current_selected_year()).kdk }}<small>KDK</small></div>
-                <div>{{ initial_submissions(current_selected_year()).grz }}<small>GRZ</small></div>
-            </div>
-            <div class="statistics-card-label">Initialmeldungen {{ current_selected_year() }}</div>
-        </div>
-    </div>
 </div>
 
 {% if cases.len() > 0 %}
