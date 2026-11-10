@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.2...v0.3.3) (2026-11-10)
+
+
+### Features
+
+* add initial submission graphs ([#69](https://github.com/diz-unimr/mv-dashboard/issues/69)) ([9f4c02d](https://github.com/diz-unimr/mv-dashboard/commit/9f4c02d9cb01b23e135fe2218908bf52184c2943))
+
 ## [0.3.2](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.1...v0.3.2) (2026-11-09)
 
 
