@@ -98,6 +98,10 @@ label.disabled {
     @apply text-gray-500 cursor-not-allowed;
 }
 
+.help {
+    @apply cursor-help;
+}
+
 .login-form {
     @apply shadow-md border-gray-500 border-2;
 
@@ -167,6 +171,10 @@ section.followup.invalid .followup-header {
     @apply bg-red-800
 }
 
+section.case.illegal_submission summary {
+    @apply bg-purple-800
+}
+
 section.case summary a,
 section.followup .followup-header a {
     @apply text-white font-normal text-base px-2 h-full;
@@ -191,6 +199,10 @@ section.case.invalid summary a {
     @apply bg-red-900
 }
 
+section.case.illegal_submission summary a {
+    @apply bg-purple-900
+}
+
 section.case.noh summary a:hover {
     @apply bg-gray-950
 }
@@ -201,6 +213,10 @@ section.case summary a:hover {
 
 section.case.invalid summary a:hover {
     @apply bg-red-950
+}
+
+section.case.illegal_submission summary a:hover {
+    @apply bg-purple-950
 }
 
 section.case summary span.case-state,
