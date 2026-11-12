@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.4...v0.3.5) (2026-11-12)
+
+
+### Bug Fixes
+
+* case count including illegal submissions ([#74](https://github.com/diz-unimr/mv-dashboard/issues/74)) ([7fee045](https://github.com/diz-unimr/mv-dashboard/commit/7fee045d8dc147278db809be31d48629c64c979d))
+
 ## [0.3.4](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.3...v0.3.4) (2026-11-12)
 
 
