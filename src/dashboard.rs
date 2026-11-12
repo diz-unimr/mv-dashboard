@@ -197,7 +197,7 @@ impl Case {
     }
 
     pub fn has_valid_case_number(&self) -> bool {
-        !self.id.starts_with('!') && !self.has_illegal_submission_case_number()
+        !self.id.starts_with('!')
     }
 
     pub fn has_illegal_submission_case_number(&self) -> bool {
