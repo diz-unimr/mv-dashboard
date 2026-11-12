@@ -80,7 +80,22 @@ export function changeVisibility(value) {
         Array.from(document.querySelectorAll('section.case.nomvc')).forEach((section) => {
             section.style.display = 'block';
         })
+    } else if (value === 'kdk_only') {
+        Array.from(document.querySelectorAll('section.case')).forEach((section) => {
+            section.style.display = 'none';
+        })
+        Array.from(document.querySelectorAll('section.case.kdk_only')).forEach((section) => {
+            section.style.display = 'block';
+        })
+    } else if (value === 'grz_only') {
+        Array.from(document.querySelectorAll('section.case')).forEach((section) => {
+            section.style.display = 'none';
+        })
+        Array.from(document.querySelectorAll('section.case.grz_only')).forEach((section) => {
+            section.style.display = 'block';
+        })
     }
+
 }
 
 export function openAllCases(value) {
