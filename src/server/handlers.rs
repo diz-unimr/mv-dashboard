@@ -126,7 +126,8 @@ impl CasesTemplate {
                 .cases
                 .iter()
                 .filter(|case| {
-                    case.clinical_submission.is_some()
+                    !case.has_illegal_submission_case_number()
+                        && case.clinical_submission.is_some()
                         && case.genomic_submission.is_none()
                         && !case.has_valid_500_submissions()
                 })
@@ -135,7 +136,9 @@ impl CasesTemplate {
                 .cases
                 .iter()
                 .filter(|case| {
-                    case.clinical_submission.is_none() && case.genomic_submission.is_some()
+                    !case.has_illegal_submission_case_number()
+                        && case.clinical_submission.is_none()
+                        && case.genomic_submission.is_some()
                 })
                 .count(),
             missing_ongoing: self
