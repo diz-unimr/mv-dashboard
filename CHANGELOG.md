@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.4](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.3...v0.3.4) (2026-11-12)
+
+
+### Features
+
+* filter cases by missing submission ([#71](https://github.com/diz-unimr/mv-dashboard/issues/71)) ([e1e48f4](https://github.com/diz-unimr/mv-dashboard/commit/e1e48f49653ae49efecee096fb9fc143728a87b9))
+* mark and filter cases with illegal submission ([#73](https://github.com/diz-unimr/mv-dashboard/issues/73)) ([71ca719](https://github.com/diz-unimr/mv-dashboard/commit/71ca7199e9e9b86da566c6e9dcc92bb85b85386a))
+
 ## [0.3.3](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.2...v0.3.3) (2026-11-10)
 
 
