@@ -1131,7 +1131,7 @@ dependencies = [
 
 [[package]]
 name = "mv-dashboard"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "askama",
  "axum",
