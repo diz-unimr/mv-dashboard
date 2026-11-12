@@ -123,6 +123,8 @@
     <select id="visibility" onchange="window.changeVisibility(this.value)">
         <option value="withh">Fälle mit Fallnummer ({{ hnummer_case_count() }})</option>
         <option value="open">Offene Fälle ({{ invalid_case_count() }})</option>
+        <option value="grz_only">Offene Fälle - KDK ausstehend ({{ submission_report().grz_only }})</option>
+        <option value="kdk_only">Offene Fälle - GRZ ausstehend ({{ submission_report().kdk_only }})</option>
         <option value="all">Alle aufgeklärten Patienten ({{ case_count() }})</option>
         <option value="nomvc">Ohne Teilnahmeerklärung ({{ without_mvconsent_count() }})</option>
     </select>
@@ -158,7 +160,13 @@
             {% if case.mv_consent.is_none() %}
                 class="case invalid nomvc"
             {% else %}
-                class="case invalid"
+                {% if case.clinical_submission.is_some() && case.genomic_submission.is_none() %}
+                    class="case invalid kdk_only"
+                {% else if case.clinical_submission.is_none() && case.genomic_submission.is_some() %}
+                    class="case invalid grz_only"
+                {% else %}
+                    class="case invalid"
+                {% endif %}
             {% endif %}
         {% else %}
             class="case noh" style="display: none"
