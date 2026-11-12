@@ -127,6 +127,7 @@
         <option value="kdk_only">Offene Fälle - GRZ ausstehend ({{ submission_report().kdk_only }})</option>
         <option value="all">Alle aufgeklärten Patienten ({{ case_count() }})</option>
         <option value="nomvc">Ohne Teilnahmeerklärung ({{ without_mvconsent_count() }})</option>
+        <option value="illegal_submission">Fälle mit ungewollter Initialmeldung ({{ submission_report().illegal_submission }})</option>
     </select>
     <div id="options">
         <span>
@@ -155,6 +156,8 @@
 <section
         {% if case.is_valid() %}
         class="case valid"
+        {% else if case.has_illegal_submission_case_number() %}
+        class="case invalid illegal_submission"
         {% else %}
         {% if case.has_valid_case_number() %}
             {% if case.mv_consent.is_none() %}
@@ -180,11 +183,13 @@
             {% when CaseState::ConsentGiven %}
             <span class="case-state">Aufgeklärt</span>
             {% when CaseState::IndicationDiscussed %}
-            <span class="case-state">Indikation besprochen</span>
+            <span class="case-state help" title="Fälle mit Indikation (Einschluss ins MV) werden in Onkostar mit einer 'I-Nummer' versehen">Indikation besprochen</span>
             {% when CaseState::SequencingRequested %}
             <span class="case-state">Sequenzierung angefordert</span>
             {% when CaseState::SequencingDone %}
-            <span class="case-state">Sequenzierung abgeschlossen</span>
+            <span class="case-state help" title="Fälle mit einer 'H-Nummer' gelten als 'Sequenzierung abgeschlossen'">Sequenzierung abgeschlossen</span>
+            {% when CaseState::IllegalSubmission %}
+            <span class="case-state help" title="Fälle mit ungewollter Initialmeldung (ohne Einschluss ins MV) werden in Onkostar mit einer 'X-Nummer' versehen">Ungewollte Initialmeldung</span>
             {% endmatch %}
             {% if case.is_valid_500_case() %}
             <span class="case-state">Fallpauschale</span>

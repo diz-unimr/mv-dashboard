@@ -69,6 +69,9 @@ export function changeVisibility(value) {
         Array.from(document.querySelectorAll('section.case.noh')).forEach((section) => {
             section.style.display = 'none';
         })
+        Array.from(document.querySelectorAll('section.case.illegal_submission')).forEach((section) => {
+            section.style.display = 'none';
+        })
     } else if (value === 'withh') {
         Array.from(document.querySelectorAll('section.case.noh')).forEach((section) => {
             section.style.display = 'none';
@@ -92,6 +95,13 @@ export function changeVisibility(value) {
             section.style.display = 'none';
         })
         Array.from(document.querySelectorAll('section.case.grz_only')).forEach((section) => {
+            section.style.display = 'block';
+        })
+    } else if (value === 'illegal_submission') {
+        Array.from(document.querySelectorAll('section.case')).forEach((section) => {
+            section.style.display = 'none';
+        })
+        Array.from(document.querySelectorAll('section.case.illegal_submission')).forEach((section) => {
             section.style.display = 'block';
         })
     }

@@ -49,6 +49,7 @@ struct SubmissionReport {
     grz_only: usize,
     missing_ongoing: usize,
     missing_all: usize,
+    illegal_submission: usize,
 }
 
 struct SubmissionSequencingTypeReport {
@@ -152,6 +153,11 @@ impl CasesTemplate {
                 .filter(|case| {
                     case.clinical_submission.is_none() && case.genomic_submission.is_none()
                 })
+                .count(),
+            illegal_submission: self
+                .cases
+                .iter()
+                .filter(|case| case.has_illegal_submission_case_number())
                 .count(),
         }
     }

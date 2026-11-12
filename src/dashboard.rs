@@ -23,6 +23,7 @@ pub(crate) enum CaseState {
     IndicationDiscussed,
     SequencingRequested,
     SequencingDone,
+    IllegalSubmission,
 }
 
 #[derive(Clone, serde::Deserialize, Debug, Eq, PartialEq)]
@@ -49,7 +50,7 @@ pub(crate) struct Case {
 impl Case {
     #[allow(clippy::expect_used)]
     pub fn formatted_case_id(&self) -> String {
-        let re = Regex::new(r"^(?<art>[IUH]|NE)(?<number>\d+)-(?<year>\d{2})$")
+        let re = Regex::new(r"^(?<art>[IUHX]|NE)(?<number>\d+)-(?<year>\d{2})$")
             .expect("Invalid regex pattern");
 
         let Some(caps) = re.captures(&self.id) else {
@@ -82,6 +83,8 @@ impl Case {
         // NeuroPath
         {
             CaseState::SequencingDone
+        } else if self.formatted_case_id().starts_with('X') {
+            CaseState::IllegalSubmission
         } else {
             CaseState::ConsentGiven
         }
@@ -194,7 +197,11 @@ impl Case {
     }
 
     pub fn has_valid_case_number(&self) -> bool {
-        !self.id.starts_with('!')
+        !self.id.starts_with('!') && !self.has_illegal_submission_case_number()
+    }
+
+    pub fn has_illegal_submission_case_number(&self) -> bool {
+        self.case_state() == CaseState::IllegalSubmission
     }
 
     pub fn with_onkostar_url(self, onkostar_url: &str) -> Self {
