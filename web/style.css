@@ -102,6 +102,10 @@ label.disabled {
     @apply bg-blue-300 border-2 border-blue-900 rounded-md p-2;
 }
 
+.top-info.illegal_submission {
+    @apply bg-purple-300 border-2 border-purple-900 rounded-md p-2;
+}
+
 .help {
     @apply cursor-help;
 }

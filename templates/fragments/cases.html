@@ -18,6 +18,13 @@
 
 <div class="submission-count">
     <h3>Stand der Fallbearbeitung</h3>
+
+    {% if submission_report().illegal_submission > 0 %}
+    <p class="top-info illegal_submission">
+        Achtung: Es sind Fälle enthalten, die nicht für das MV vorgesehen sind.
+    </p>
+    {% endif %}
+
     <div style="display: grid; grid-template-columns: 1fr 4fr;">
         <div id="cases-graph" data-value='{{ json_data() }}'>
             <!-- graph will be loaded here -->
@@ -35,6 +42,10 @@
                 <div class="statistics-card error">
                     <div class="statistics-card-value">{{ invalid_case_count() }}</div>
                     <div class="statistics-card-label">Fälle noch offen</div>
+                </div>
+                <div class="statistics-card illegal_submission">
+                    <div class="statistics-card-value">{{ submission_report().illegal_submission }}</div>
+                    <div class="statistics-card-label">Ungewollte Fälle</div>
                 </div>
             </div>
             <div class="statistics-more">

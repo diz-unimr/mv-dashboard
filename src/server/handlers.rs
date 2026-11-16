@@ -292,6 +292,7 @@ impl CasesTemplate {
                 "hnumber_case_count": self.hnummer_case_count(),
                 "valid_case_count": self.valid_case_count(),
                 "invalid_case_count": self.invalid_case_count(),
+                "illegal_case_count": self.submission_report().illegal_submission,
             },
             "submission_reports": {
                 "required": self.submission_report().required,

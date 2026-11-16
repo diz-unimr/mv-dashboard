@@ -160,6 +160,7 @@ export function showCasesDiagram() {
                     { name: 'Meldebestätigung nur vom KDK', value: data.submission_reports['kdk_only'], itemStyle: { color: '#d08700' } },
                     { name: 'Meldebestätigung nur vom GRZ', value: data.submission_reports['grz_only'], itemStyle: { color: '#d08700' } },
                     { name: 'Keine Meldebestätigung', value: data.submission_reports['missing_ongoing'], itemStyle: { color: '#9f0712' } },
+                    { name: 'Ungewollte Fälle', value: data.cases['illegal_case_count'], itemStyle: { color: '#6e11b0' } },
                     { name: 'Ohne Fallnummer (aber aufgeklärt)', value: data.cases['case_count'] - data.cases['hnumber_case_count'], itemStyle: { color: '#eee' } }
                 ],
             }
