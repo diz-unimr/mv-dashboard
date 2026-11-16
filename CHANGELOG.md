@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.5...v0.4.0) (2026-11-16)
+
+
+### Features
+
+* highlight illegal cases ([#78](https://github.com/diz-unimr/mv-dashboard/issues/78)) ([717959b](https://github.com/diz-unimr/mv-dashboard/commit/717959bfb4ab58f8d4c9080207b426b933383a86))
+* show case info for selected year ([#76](https://github.com/diz-unimr/mv-dashboard/issues/76)) ([4f58aa2](https://github.com/diz-unimr/mv-dashboard/commit/4f58aa215c659efa20775259335d5a92558838a9))
+
+
+### Miscellaneous Chores
+
+* release 0.4.0 ([064d124](https://github.com/diz-unimr/mv-dashboard/commit/064d12476d2a14053c9e3748fe93cb5c4345f006))
+
 ## [0.3.5](https://github.com/diz-unimr/mv-dashboard/compare/v0.3.4...v0.3.5) (2026-11-12)
 
 
