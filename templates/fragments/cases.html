@@ -10,6 +10,12 @@
     </select>
 </h1>
 
+{% if selected_year.is_some() %}
+<p class="top-info">
+    Achtung: Es werden nur abgeschlossene Fälle mit Leistungsdatum im ausgewählten Jahr {{ selected_year.unwrap_or(0) }} angezeigt.
+</p>
+{% endif %}
+
 <div class="submission-count">
     <h3>Stand der Fallbearbeitung</h3>
     <div style="display: grid; grid-template-columns: 1fr 4fr;">
