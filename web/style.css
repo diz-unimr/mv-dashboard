@@ -98,6 +98,10 @@ label.disabled {
     @apply text-gray-500 cursor-not-allowed;
 }
 
+.top-info {
+    @apply bg-blue-300 border-2 border-blue-900 rounded-md p-2;
+}
+
 .help {
     @apply cursor-help;
 }
@@ -297,7 +301,7 @@ section.followup.invalid div.followup-details {
 }
 
 .statistics-main {
-    @apply grid grid-cols-3 gap-2 text-lg font-normal my-2;
+    @apply grid grid-cols-4 gap-2 text-lg font-normal my-2;
 }
 
 .statistics-more {
@@ -373,6 +377,10 @@ section.followup.invalid div.followup-details {
 
 .statistics-card.error {
     @apply bg-red-800 text-red-100;
+}
+
+.statistics-card.illegal_submission {
+    @apply bg-purple-800 text-purple-100;
 }
 
 .submission-count h3 {
