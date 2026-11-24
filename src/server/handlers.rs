@@ -387,7 +387,7 @@ pub(super) async fn show_login() -> Result<impl IntoResponse, String> {
 pub(super) async fn handle_index_request(
     auth: AuthSession<Backend>,
 ) -> Result<impl IntoResponse, String> {
-    let user = auth.user.clone().unwrap_or_default();
+    let user = auth.user().await.clone().unwrap_or_default();
 
     let template = IndexTemplate {
         username: user.username().to_string(),
@@ -400,7 +400,7 @@ pub(super) async fn handle_cases_request(
     auth: AuthSession<Backend>,
     filter: Query<CaseFilter>,
 ) -> Result<impl IntoResponse, String> {
-    let user = auth.user.clone().unwrap_or_default();
+    let user = auth.user().await.clone().unwrap_or_default();
 
     let response = match API_CLIENT.request_dashboard_data(user.clone()).await {
         Ok(data) => data,
@@ -437,7 +437,7 @@ pub(super) async fn handle_cases_request(
 pub(super) async fn handle_followup_request(
     auth: AuthSession<Backend>,
 ) -> Result<impl IntoResponse, String> {
-    let user = auth.user.clone().unwrap_or_default();
+    let user = auth.user().await.clone().unwrap_or_default();
 
     let response = match API_CLIENT.request_dashboard_data(user.clone()).await {
         Ok(data) => data,

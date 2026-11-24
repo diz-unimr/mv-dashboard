@@ -154,7 +154,7 @@ pub(crate) async fn handle_login(
     Redirect::to("/mv-dashboard").into_response()
 }
 
-pub(crate) async fn handle_logout(mut auth_session: AuthSession<Backend>) -> impl IntoResponse {
+pub(crate) async fn handle_logout(auth_session: AuthSession<Backend>) -> impl IntoResponse {
     match auth_session.logout().await {
         Ok(_) => Redirect::to("/mv-dashboard/login").into_response(),
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),

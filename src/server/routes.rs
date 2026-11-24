@@ -18,7 +18,7 @@ pub(crate) fn routes(auth_backend: Backend, cookie_domain: Option<String>) -> ax
         req: Request<Body>,
         next: Next,
     ) -> Response {
-        if auth.user.is_some() {
+        if auth.user().await.is_some() {
             return next.run(req).await;
         }
 
